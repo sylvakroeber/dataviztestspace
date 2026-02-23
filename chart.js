@@ -73,7 +73,7 @@
     const annotationDim    = TC.annotationDim    || '#bbb';
     const cursorColor   = TC.cursor          || '#999';
     const palettes      = TC.palettes        || {};
-    const seriesPalette = palettes[placeholder.dataset.palette] || palettes.blues || ['#4e79a7', '#72A4D7'];
+    const seriesPalette = palettes[placeholder.dataset.palette] || palettes.blues || ['#286dc0', '#63aaff'];
 
     const titleSize    = TY.titleSize       || '18px';
     const titleWeight  = TY.titleWeight     || 600;
@@ -390,8 +390,8 @@
           const dataRows = rows.slice(6).filter(r => r[0]);
 
           const seriesDefs = [
-            { name: 'Customs duties (nominal USD)', color: seriesPalette[0] || '#4e79a7', col: 1 },
-            { name: 'Customs duties (2025 USD)',    color: seriesPalette[1] || '#72A4D7', col: 2 },
+            { name: 'Customs duties (nominal USD)', color: seriesPalette[0] || '#286dc0', col: 1 },
+            { name: 'Customs duties (2025 USD)',    color: seriesPalette[1] || '#63aaff', col: 2 },
           ];
 
           const series = seriesDefs.map(s => ({
