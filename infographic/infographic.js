@@ -77,9 +77,12 @@
       u + ' .calc-field > label, ' + u + ' .calc-label { display: block; font-size: ' + theme.annotationSize + '; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; margin-bottom: 8px; }',
       u + ' .calculator input[type="number"] { width: 100%; padding: 10px 12px; border: 1px solid rgba(0,0,0,0.2); border-radius: ' + theme.borderRadius + '; font-size: 16px; background: rgba(255,255,255,0.6); color: ' + theme.titleText + '; outline: none; transition: border-color 0.2s; }',
       u + ' .calculator input[type="number"]:focus { border-color: rgba(0,0,0,0.4); }',
-      u + ' .calc-checkboxes { display: flex; gap: 16px; flex-wrap: wrap; }',
-      u + ' .calc-check { display: flex; align-items: center; gap: 7px; font-size: ' + theme.bodySize + '; cursor: pointer; }',
-      u + ' .calc-check input { cursor: pointer; width: 16px; height: 16px; accent-color: ' + theme.titleText + '; }',
+      u + ' .loan-type-btns { display: flex; gap: 8px; flex-wrap: wrap; }',
+      u + ' .loan-btn { padding: 7px 14px; border: 1.5px solid rgba(0,0,0,0.2); border-radius: ' + theme.borderRadius + '; background: rgba(255,255,255,0.5); color: ' + theme.titleText + '; font-size: ' + theme.bodySize + '; font-weight: 600; cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s; }',
+      u + ' .loan-btn:hover { border-color: rgba(0,0,0,0.4); background: rgba(255,255,255,0.8); }',
+      u + ' .loan-btn.active[data-value="auto"]     { background: ' + theme.colorAuto + ';     border-color: ' + theme.colorAuto + ';     color: #fff; }',
+      u + ' .loan-btn.active[data-value="mortgage"] { background: ' + theme.colorMortgage + '; border-color: ' + theme.colorMortgage + '; color: #fff; }',
+      u + ' .loan-btn.active[data-value="business"] { background: ' + theme.colorBiz + ';      border-color: ' + theme.colorBiz + ';      color: #fff; }',
       '#' + uid + '-calcBtn { padding: 10px 24px; background: ' + theme.titleText + '; color: #fff; border: none; border-radius: ' + theme.borderRadius + '; font-size: ' + theme.bodySize + '; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: block; margin: 4px auto 0; }',
       '#' + uid + '-calcBtn:hover { opacity: 0.85; }',
       u + ' .calc-result { font-size: ' + theme.bodySize + '; line-height: 1.9; width: 100%; }',
@@ -165,10 +168,10 @@
             '</div>' +
             '<div class="calc-field">' +
               '<span class="calc-label">Type of loan</span>' +
-              '<div class="calc-checkboxes">' +
-                '<label class="calc-check"><input type="radio" name="' + uid + '-loanType" value="auto" /> Auto</label>' +
-                '<label class="calc-check"><input type="radio" name="' + uid + '-loanType" value="mortgage" /> Mortgage</label>' +
-                '<label class="calc-check"><input type="radio" name="' + uid + '-loanType" value="business" /> Small Business</label>' +
+              '<div class="loan-type-btns">' +
+                '<button class="loan-btn" data-value="auto">Auto</button>' +
+                '<button class="loan-btn" data-value="mortgage">Mortgage</button>' +
+                '<button class="loan-btn" data-value="business">Small Business</button>' +
               '</div>' +
             '</div>' +
             '<button id="' + uid + '-calcBtn">Calculate</button>' +
@@ -213,7 +216,7 @@
       : d3.scaleLinear().domain([0, maxVal * 1.2]).range([H, 0]).nice();
 
     var axSize = parseInt(theme.axisSize, 10);
-    var xLabels = { auto: 'Auto', mortgage: 'Mortgage', biz: 'Small Biz' };
+    var xLabels = { auto: 'Auto', mortgage: 'Mortgage', biz: 'Small Business' };
 
     // Grid lines (skip yMin on log scale — it coincides with bar baseline)
     var gridTicks = opts.logScale ? [1000, 10000, 100000] : yScale.ticks(5);
@@ -230,7 +233,7 @@
       : function(d) { return d === 0 ? '$0' : d >= 1000 ? '$' + Math.round(d / 1000) + 'k' : '$' + d; };
 
     var yAxisFn = opts.logScale
-      ? d3.axisLeft(yScale).tickValues([100, 1000, 10000, 100000]).tickFormat(yFmt)
+      ? d3.axisLeft(yScale).tickValues([1000, 10000, 100000]).tickFormat(yFmt)
       : d3.axisLeft(yScale).ticks(5).tickFormat(yFmt);
 
     g.append('g').call(yAxisFn).call(function(ax) {
@@ -238,6 +241,17 @@
       ax.selectAll('.tick line').remove();
       ax.selectAll('text').attr('fill', theme.axisText).style('font-size', axSize + 'px');
     });
+
+    // Log scale: add explicit $0 label at the bar baseline (log(0) is undefined so
+    // it can't be a real tick, but visually the bars grow from zero)
+    if (opts.logScale) {
+      g.append('text')
+        .attr('x', -3).attr('y', H).attr('dy', '0.32em')
+        .attr('text-anchor', 'end')
+        .attr('fill', theme.axisText)
+        .style('font-size', axSize + 'px')
+        .text('$0');
+    }
 
     // X axis
     g.append('g').attr('transform', 'translate(0,' + H + ')')
@@ -355,20 +369,27 @@
       resizeTimer = setTimeout(renderAll, 150);
     }).observe(document.getElementById(uid));
 
-    // Calculator
+    // Calculator — loan type buttons
+    document.querySelectorAll('#' + uid + ' .loan-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('#' + uid + ' .loan-btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+      });
+    });
+
     var annualRates   = { auto: 180,  mortgage: 3610,   business: 1360 };
     var lifetimeRates = { auto: 990,  mortgage: 108430, business: 6810 };
     var baseAmounts   = { auto: 25000, mortgage: 400000, business: 100000 };
 
     document.getElementById(uid + '-calcBtn').addEventListener('click', function() {
       var amount = parseFloat(document.getElementById(uid + '-loanAmount').value);
-      var typeEl = document.querySelector('#' + uid + ' input[name="' + uid + '-loanType"]:checked');
+      var typeEl = document.querySelector('#' + uid + ' .loan-btn.active');
       var result = document.getElementById(uid + '-calcResult');
 
       if (!amount || amount <= 0) { result.innerHTML = '<span class="calc-error">Please enter a valid loan amount.</span>'; return; }
       if (!typeEl)                 { result.innerHTML = '<span class="calc-error">Please select a loan type.</span>';        return; }
 
-      var type      = typeEl.value;
+      var type      = typeEl.dataset.value;
       var typeLabel = type === 'auto' ? 'auto loan' : type === 'mortgage' ? 'mortgage' : 'small business loan';
       var ratio     = amount / baseAmounts[type];
       var annual    = Math.round(annualRates[type]   * ratio);
