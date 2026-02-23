@@ -69,8 +69,8 @@
     const axisStroke    = TC.axisStroke      || '#e0e0e0';
     const gridColor     = TC.gridline        || '#f0f0f0';
     const tooltipBg     = TC.tooltip         || 'rgba(20,20,40,0.65)';
-    const annotation    = TC.annotation      || '#f28e2b';
-    const annotLine     = TC.annotationLine  || '#bbb';
+    const annotationBright = TC.annotationBright || '#f28e2b';
+    const annotationDim    = TC.annotationDim    || '#bbb';
     const cursorColor   = TC.cursor          || '#999';
     const seriesPalette = TC.series          || ['#4e79a7', '#72A4D7'];
 
@@ -257,7 +257,7 @@
         g.append('line')
           .attr('x1', x(new Date('2025-01-01'))).attr('x2', x(new Date('2025-01-01')))
           .attr('y1', 0).attr('y2', height)
-          .attr('stroke', annotLine).attr('stroke-width', 1).attr('stroke-dasharray', '4,4');
+          .attr('stroke', annotationDim).attr('stroke-width', 1).attr('stroke-dasharray', '4,4');
 
         // Axes
         g.append('g').attr('class', 'axis')
@@ -294,10 +294,10 @@
           const ay = y(data.avgValue);
           g.append('line')
             .attr('x1', 0).attr('x2', width).attr('y1', ay).attr('y2', ay)
-            .attr('stroke', annotation).attr('stroke-width', 1.5).attr('stroke-dasharray', '5,4');
+            .attr('stroke', annotationBright).attr('stroke-width', 1.5).attr('stroke-dasharray', '5,4');
           g.append('text')
             .attr('x', x(new Date('2023-02-01'))).attr('y', ay - 10)
-            .attr('text-anchor', 'start').attr('font-size', annotSize).attr('fill', annotation)
+            .attr('text-anchor', 'start').attr('font-size', annotSize).attr('fill', annotationBright)
             .text(data.avgLabel || 'Avg');
         }
 

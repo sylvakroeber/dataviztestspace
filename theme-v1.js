@@ -20,8 +20,8 @@ window.TBL_THEME = {
     gridline:      '#f0f0f0',
     tooltip:       'rgba(20,20,40,0.65)',
     cursor:        '#999',
-    annotation:    '#f28e2b',   // orange — horizontal avg line + label
-    annotationLine:'#bbb',      // gray  — vertical Jan 2025 line
+    annotationBright: '#f28e2b',  // orange — prominent annotation lines and labels
+    annotationDim:    '#bbb',     // gray   — subtle / secondary annotation lines
 
     // Ordered palette for line series (index matches seriesDefs order)
     series: ['#4e79a7', '#72A4D7']
