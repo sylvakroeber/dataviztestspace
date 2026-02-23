@@ -227,6 +227,15 @@
       .attr('stroke', theme.gridline)
       .attr('stroke-width', 1);
 
+    // Log scale: draw explicit baseline at H (linear scale gets this free from its $0 grid tick)
+    if (opts.logScale) {
+      g.append('line')
+        .attr('x1', 0).attr('x2', W)
+        .attr('y1', H).attr('y2', H)
+        .attr('stroke', theme.gridline)
+        .attr('stroke-width', 1);
+    }
+
     // Y axis
     var yFmt = opts.logScale
       ? function(d) { return d >= 1000 ? '$' + (d / 1000).toFixed(0) + 'k' : '$' + d; }
