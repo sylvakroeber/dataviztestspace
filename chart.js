@@ -8,6 +8,10 @@
  * Attributes on the placeholder <div>:
  *   data-src  — URL to the .xlsx file (HTTP/HTTPS + CORS required)
  *   data-logo — URL to the SVG logo (falls back to relative path)
+ *
+ * Visual values are read from window.TBL_THEME (set by theme-v1.js or
+ * a later version). Every read uses an || fallback so the chart works
+ * standalone even when no theme file is loaded.
  */
 (function () {
   'use strict';
@@ -51,6 +55,42 @@
     const DATA_SOURCE = placeholder.dataset.src  || 'tariff_impacts_results_20260216.xlsx';
     const LOGO_SRC    = placeholder.dataset.logo || 'TBL_ID_Graph_BrightBlue_KO.svg';
 
+    // ── Theme values (window.TBL_THEME if loaded, else hardcoded fallbacks) ──
+    const T   = window.TBL_THEME || {};
+    const TC  = T.colors     || {};
+    const TY  = T.typography || {};
+    const TS  = T.spacing    || {};
+    const TCH = T.chart      || {};
+
+    const bg            = TC.background      || '#fff';
+    const titleColor    = TC.titleText       || '#1a1a2e';
+    const secondary     = TC.secondaryText   || '#888';
+    const axisColor     = TC.axisText        || '#666';
+    const axisStroke    = TC.axisStroke      || '#e0e0e0';
+    const gridColor     = TC.gridline        || '#f0f0f0';
+    const tooltipBg     = TC.tooltip         || 'rgba(20,20,40,0.65)';
+    const annotation    = TC.annotation      || '#f28e2b';
+    const annotLine     = TC.annotationLine  || '#bbb';
+    const cursorColor   = TC.cursor          || '#999';
+    const seriesPalette = TC.series          || ['#4e79a7', '#72A4D7'];
+
+    const titleSize    = TY.titleSize       || '18px';
+    const titleWeight  = TY.titleWeight     || 600;
+    const bodySize     = TY.bodySize        || '13px';
+    const axisSize     = TY.axisSize        || '11px';
+    const annotSize    = TY.annotationSize  || '12px';
+    const smallSize    = TY.smallSize       || '11px';
+
+    const contPadding  = TS.containerPadding || '24px 24px 15px';
+    const maxWidth     = TS.maxWidth         || '900px';
+    const contRadius   = TS.borderRadius     || '8px';
+    const logoHeight   = TS.logoHeight       || '32px';
+    const logoOpacity  = TS.logoOpacity != null ? TS.logoOpacity : 0.85;
+
+    const aspectRatio  = TCH.aspectRatio     || 0.45;
+    const margin       = TCH.margin          || { top: 20, right: 30, bottom: 50, left: 60 };
+    const strokeWidth  = TCH.lineStrokeWidth || '2.5px';
+
     // ── Inject HTML ───────────────────────────────────────────────────────────
     placeholder.innerHTML = `
       <div id="${uid}-container">
@@ -81,18 +121,18 @@
     const styleEl = document.createElement('style');
     styleEl.textContent = `
       ${c} {
-        background: #fff;
-        border-radius: 8px;
-        padding: 24px 24px 15px;
-        max-width: 900px;
+        background: ${bg};
+        border-radius: ${contRadius};
+        padding: ${contPadding};
+        max-width: ${maxWidth};
         margin: 0 auto;
         position: relative;
       }
       #${uid}-logo {
         position: absolute;
         bottom: 16px; right: 20px;
-        height: 32px; width: auto;
-        opacity: 0.85;
+        height: ${logoHeight}; width: auto;
+        opacity: ${logoOpacity};
       }
       #${uid}-header {
         display: flex;
@@ -100,22 +140,22 @@
         align-items: flex-start;
         margin-bottom: 8px;
       }
-      #${uid}-title { font-size: 18px; font-weight: 600; color: #1a1a2e; }
-      #${uid}-unit  { font-size: 13px; color: #888; margin-top: 2px; }
+      #${uid}-title { font-size: ${titleSize}; font-weight: ${titleWeight}; color: ${titleColor}; }
+      #${uid}-unit  { font-size: ${bodySize}; color: ${secondary}; margin-top: 2px; }
       #${uid}-wrapper svg { display: block; width: 100%; }
-      ${c} .axis text { font-size: 11px; fill: #666; }
-      ${c} .axis path, ${c} .axis line { stroke: #e0e0e0; stroke-width: 1px; fill: none; }
-      ${c} .gridline line { stroke: #f0f0f0; stroke-width: 1px; stroke-dasharray: 3,3; }
-      ${c} .line-path { fill: none; stroke-width: 2.5px; transition: opacity 0.3s; }
+      ${c} .axis text { font-size: ${axisSize}; fill: ${axisColor}; }
+      ${c} .axis path, ${c} .axis line { stroke: ${axisStroke}; stroke-width: 1px; fill: none; }
+      ${c} .gridline line { stroke: ${gridColor}; stroke-width: 1px; stroke-dasharray: 3,3; }
+      ${c} .line-path { fill: none; stroke-width: ${strokeWidth}; transition: opacity 0.3s; }
       ${c} .dot { transition: r 0.15s; cursor: pointer; }
       #${uid}-tooltip {
         position: fixed;
         pointer-events: none;
-        background: rgba(20,20,40,0.65);
+        background: ${tooltipBg};
         color: #fff;
         border-radius: 6px;
         padding: 9px 13px;
-        font-size: 13px;
+        font-size: ${bodySize};
         line-height: 1.6;
         display: none;
         z-index: 9999;
@@ -131,29 +171,28 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        font-size: 13px;
+        font-size: ${bodySize};
         cursor: pointer;
         user-select: none;
       }
       ${c} .tbl-legend-swatch { width: 14px; height: 14px; border-radius: 3px; }
       #${uid}-footnote {
-        font-size: 11px; color: #888;
+        font-size: ${smallSize}; color: ${secondary};
         line-height: 1.5; margin-top: 10px; padding-right: 160px;
       }
       #${uid}-credit {
-        font-size: 11px; color: #888;
+        font-size: ${smallSize}; color: ${secondary};
         margin-top: 4px; padding-right: 160px;
       }
       #${uid}-error {
         display: none;
         background: #fff3f3; border: 1px solid #f5c6cb;
         border-radius: 6px; padding: 10px 14px;
-        color: #721c24; font-size: 13px; margin-top: 12px;
+        color: #721c24; font-size: ${bodySize}; margin-top: 12px;
       }`;
     document.head.appendChild(styleEl);
 
     // ── Helpers ───────────────────────────────────────────────────────────────
-    const margin = { top: 20, right: 30, bottom: 50, left: 60 };
     const el = suffix => document.getElementById(`${uid}-${suffix}`);
 
     function showError(msg) {
@@ -180,7 +219,7 @@
         wrapper.innerHTML = '';
 
         const totalWidth  = wrapper.clientWidth || 800;
-        const totalHeight = Math.round(totalWidth * 0.45);
+        const totalHeight = Math.round(totalWidth * aspectRatio);
         const width  = totalWidth  - margin.left - margin.right;
         const height = totalHeight - margin.top  - margin.bottom;
 
@@ -218,7 +257,7 @@
         g.append('line')
           .attr('x1', x(new Date('2025-01-01'))).attr('x2', x(new Date('2025-01-01')))
           .attr('y1', 0).attr('y2', height)
-          .attr('stroke', '#bbb').attr('stroke-width', 1).attr('stroke-dasharray', '4,4');
+          .attr('stroke', annotLine).attr('stroke-width', 1).attr('stroke-dasharray', '4,4');
 
         // Axes
         g.append('g').attr('class', 'axis')
@@ -232,7 +271,7 @@
         g.append('text')
           .attr('transform', 'rotate(-90)')
           .attr('y', -margin.left + 12).attr('x', -height / 2)
-          .attr('text-anchor', 'middle').attr('font-size', '11px').attr('fill', '#888')
+          .attr('text-anchor', 'middle').attr('font-size', axisSize).attr('fill', secondary)
           .text(data.unit || '');
 
         const line = d3.line()
@@ -246,7 +285,7 @@
             .datum(s.parsed)
             .attr('class', 'line-path')
             .attr('id', `${uid}-line-${s.name.replace(/[^a-zA-Z0-9]+/g, '-')}`)
-            .attr('stroke', s.color || '#4e79a7')
+            .attr('stroke', s.color || seriesPalette[0])
             .attr('d', line);
         });
 
@@ -255,17 +294,17 @@
           const ay = y(data.avgValue);
           g.append('line')
             .attr('x1', 0).attr('x2', width).attr('y1', ay).attr('y2', ay)
-            .attr('stroke', '#f28e2b').attr('stroke-width', 1.5).attr('stroke-dasharray', '5,4');
+            .attr('stroke', annotation).attr('stroke-width', 1.5).attr('stroke-dasharray', '5,4');
           g.append('text')
             .attr('x', x(new Date('2023-02-01'))).attr('y', ay - 10)
-            .attr('text-anchor', 'start').attr('font-size', '12px').attr('fill', '#f28e2b')
+            .attr('text-anchor', 'start').attr('font-size', annotSize).attr('fill', annotation)
             .text(data.avgLabel || 'Avg');
         }
 
         // Cursor line (sits above series, below overlay)
         const cursorLine = g.append('line')
           .attr('y1', 0).attr('y2', height)
-          .attr('stroke', '#999').attr('stroke-width', 1)
+          .attr('stroke', cursorColor).attr('stroke-width', 1)
           .attr('pointer-events', 'none').style('display', 'none');
 
         // Legend
@@ -276,7 +315,7 @@
           item.className = 'tbl-legend-item';
           const swatch = document.createElement('div');
           swatch.className = 'tbl-legend-swatch';
-          swatch.style.background = s.color || '#4e79a7';
+          swatch.style.background = s.color || seriesPalette[0];
           const label  = document.createElement('span');
           label.textContent = s.name;
           item.appendChild(swatch);
@@ -350,8 +389,8 @@
           const dataRows = rows.slice(6).filter(r => r[0]);
 
           const seriesDefs = [
-            { name: 'Customs duties (nominal USD)', color: '#4e79a7', col: 1 },
-            { name: 'Customs duties (2025 USD)',    color: '#72A4D7', col: 2 },
+            { name: 'Customs duties (nominal USD)', color: seriesPalette[0] || '#4e79a7', col: 1 },
+            { name: 'Customs duties (2025 USD)',    color: seriesPalette[1] || '#72A4D7', col: 2 },
           ];
 
           const series = seriesDefs.map(s => ({

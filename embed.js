@@ -9,7 +9,13 @@
   var me = document.currentScript;
   me.parentNode.insertBefore(div, me);
 
-  var s = document.createElement('script');
-  s.src = BASE + 'chart.js';
-  document.head.appendChild(s);
+  // Load theme first (sets window.TBL_THEME), then chart.js reads it
+  var theme = document.createElement('script');
+  theme.src = BASE + 'theme-v1.js';
+  theme.onload = function () {
+    var s = document.createElement('script');
+    s.src = BASE + 'chart.js';
+    document.head.appendChild(s);
+  };
+  document.head.appendChild(theme);
 }());

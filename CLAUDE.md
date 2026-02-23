@@ -17,10 +17,52 @@ Fonts are intentionally omitted from chart styles — inherited from the host pa
 |------|---------|
 | `chart.html` | Standalone preview page — thin shell that loads `chart.js` |
 | `chart.js` | All chart logic — used by both `chart.html` and the embed system |
-| `embed.js` | Minimal loader (~8 lines) for host sites; fetches `chart.js` from GitHub |
+| `theme-v1.js` | Budget Lab house style — sets `window.TBL_THEME`; versioned filename |
+| `embed.js` | Loader for host sites; fetches `theme-v1.js` then `chart.js` from GitHub |
 | `tariff_impacts_results_20260216.xlsx` | Data source — read client-side via SheetJS |
 | `TBL_ID_Graph_BrightBlue_KO.svg` | Budget Lab logo (blue graph, navy text on transparent background) |
 | `TBL_ID_Graph_BrightBlue_K.svg` | Alternate logo variant with black text (not currently used in chart) |
+
+---
+
+## House Stylesheet: `theme-v1.js`
+
+`theme-v1.js` sets `window.TBL_THEME` — a plain object grouping all Budget Lab visual constants. `chart.js` reads every value with an `|| fallback`, so the chart works standalone even when no theme file is loaded (e.g. `chart.html` in local development without a server).
+
+### TBL_THEME structure
+
+```javascript
+window.TBL_THEME = {
+  colors: {
+    background, titleText, secondaryText, axisText,
+    axisStroke, gridline, tooltip, cursor,
+    annotation,     // orange (#f28e2b) — horizontal avg line + label
+    annotationLine, // gray  (#bbb)    — vertical Jan 2025 line
+    series: ['#4e79a7', '#72A4D7', ...]  // ordered palette for line series
+  },
+  typography: { titleSize, titleWeight, bodySize, axisSize, annotationSize, smallSize },
+  spacing:    { containerPadding, maxWidth, borderRadius, logoHeight, logoOpacity },
+  chart:      { aspectRatio, margin, lineStrokeWidth }
+}
+```
+
+### Versioning rule — protecting existing embeds
+
+`theme-v1.js` is referenced by a **versioned filename**. Each embed file pins to a specific version:
+
+- `embed.js` (current chart) → loads `theme-v1.js` → frozen forever
+- `embed2.js` (next chart) → loads `theme-v1.js` (or `theme-v2.js` if style changes)
+
+**Rule of thumb:**
+- **Bug fix / typo** → edit `theme-v1.js` in place (safe, intentional for all charts pinned to it)
+- **Visual change** → create `theme-v2.js`; point new embeds there; never touch `theme-v1.js`
+
+### Pattern for future charts
+
+Each new chart needs only:
+1. A `chartN.js` — `seriesDefs`, sheet config, data transforms; no style definitions
+2. An `embedN.js` — loads the pinned theme version, then `chartN.js`
+3. All styling inherited from the theme
 
 ---
 
@@ -73,15 +115,15 @@ Fonts are intentionally omitted — inherited from the host page.
 
 ## embed.js — Script-Based Embed
 
-`embed.js` is a minimal (~8 line) loader kept on the host site. Its only job is to inject a `<script>` tag pointing to `chart.js` on GitHub. All chart logic, CSS, and HTML injection live in `chart.js`.
+`embed.js` is a small loader kept on the host site. It injects `theme-v1.js` first (setting `window.TBL_THEME`), then injects `chart.js` in its `onload` callback so the theme is guaranteed to be present when the chart initialises. All chart logic, CSS, and HTML injection live in `chart.js`.
 
-The one value that needs to be set in `embed.js` is `CHART_JS` — the GitHub Pages URL of `chart.js`:
+The one value that needs to be set in `embed.js` is `BASE` — the GitHub Pages base URL:
 
 ```javascript
-var CHART_JS = 'https://YOUR-USERNAME.github.io/YOUR-REPO/chart.js';
+var BASE = 'https://YOUR-USERNAME.github.io/YOUR-REPO/';
 ```
 
-Once set, `embed.js` never needs to change again — future chart updates are deployed by pushing a new `chart.js` to GitHub.
+Once set, `embed.js` never needs to change again — future chart updates are deployed by pushing new files to GitHub.
 
 ### Usage on a host page
 
@@ -120,8 +162,8 @@ The main reason not to simply reference `chart.html` via a `<script>` tag is tha
 
 1. **`loadScript(src)` / `ensureDeps()`** — dynamically inject D3 v7 and SheetJS CDN scripts if not already present; deduplicated with a module-level promise cache so multiple charts on the same page share one load. Skipped if `window.d3` / `window.XLSX` are already set (e.g. pre-loaded by `chart.html`).
 2. **`excelDateToYYYYMM(serial)`** — converts Excel serial date numbers to `"YYYY-MM"` strings.
-3. **`initChart(placeholder)`** — chart factory called once per `[data-tbl-chart]` element. Generates the UID, injects HTML and scoped CSS, then calls `ensureDeps()`.
-4. **`drawChart(data)`** — pure render function. Accepts `{ title, unit, series, avgValue, avgLabel }`. Clears and redraws from scratch on every call (supports resize). All `getElementById` / D3 selector calls use the UID-prefixed IDs.
+3. **`initChart(placeholder)`** — chart factory called once per `[data-tbl-chart]` element. Reads `window.TBL_THEME` (with `|| fallbacks`) into local constants, generates the UID, injects HTML and scoped CSS (using theme values), then calls `ensureDeps()`.
+4. **`drawChart(data)`** — pure render function. Accepts `{ title, unit, series, avgValue, avgLabel }`. Clears and redraws from scratch on every call (supports resize). All `getElementById` / D3 selector calls use the UID-prefixed IDs. Uses theme variables via closure.
 5. **`fetchAndRender()`** — fetches and parses the xlsx, calls `drawChart`. Re-called on window resize (debounced 200 ms).
 
 ---
