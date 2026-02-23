@@ -5,18 +5,18 @@
  * It creates the placeholder div, then loads the script stack in order:
  *   theme → core → line chart engine → chart
  *
- * The only value to change per deployment is BASE.
+ * The only value to change per deployment is SITE.
  */
 (function () {
   'use strict';
 
-  var BASE = 'https://sylvakroeber.github.io/dataviztestspace/d3charts/';
+  var SITE = 'https://sylvakroeber.github.io/dataviztestspace/';
 
   // Insert the placeholder div immediately before this <script> tag
   var me = document.currentScript;
   var div = document.createElement('div');
   div.setAttribute('data-tbl-chart', '');
-  div.setAttribute('data-logo', BASE + 'TBL_ID_Graph_BrightBlue_KO.svg');
+  div.setAttribute('data-logo', SITE + 'd3charts/TBL_ID_Graph_BrightBlue_KO.svg');
   me.parentNode.insertBefore(div, me);
 
   function showLoadError(filename) {
@@ -32,19 +32,19 @@
     div.textContent = 'Chart failed to load: could not fetch ' + filename;
   }
 
-  function loadScript(filename, onload) {
+  function loadScript(relPath, onload) {
     var s = document.createElement('script');
-    s.src = BASE + filename;
-    s.onerror = function () { showLoadError(filename); };
+    s.src = SITE + relPath;
+    s.onerror = function () { showLoadError(relPath.split('/').pop()); };
     if (onload) s.onload = onload;
     document.head.appendChild(s);
   }
 
   // Load order: theme → core → line chart engine → chart-specific logic
-  loadScript('theme-v1.js', function () {
-    loadScript('chart-core.js', function () {
-      loadScript('linechart.js', function () {
-        loadScript('chart.js');
+  loadScript('shared/theme-v1.js', function () {
+    loadScript('shared/chart-core.js', function () {
+      loadScript('d3charts/linechart.js', function () {
+        loadScript('d3charts/chart.js');
       });
     });
   });

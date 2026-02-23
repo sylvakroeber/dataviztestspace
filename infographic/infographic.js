@@ -452,7 +452,7 @@
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────────
   function initChart(placeholder) {
-    if (!window.TBL_CORE) { console.error('TBL_INFOGRAPHIC: chart-core.js must be loaded before infographic.js'); return; }
+    if (!window.TBL_CORE) { console.error('TBL_INFOGRAPHIC: shared/chart-core.js must be loaded before infographic.js'); return; }
     var uid   = 'tbl-inf-' + Math.random().toString(36).slice(2, 8);
     var theme = resolveTheme();
     placeholder.id = uid;

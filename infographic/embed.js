@@ -15,7 +15,7 @@
   function loadCore() {
     if (window.TBL_CORE) { loadInfographic(); return; }
     var c = document.createElement('script');
-    c.src = SITE + 'd3charts/chart-core.js';
+    c.src = SITE + 'shared/chart-core.js';
     c.onload = loadInfographic;
     document.head.appendChild(c);
   }
@@ -24,7 +24,7 @@
     loadCore();
   } else {
     var t = document.createElement('script');
-    t.src = SITE + 'd3charts/theme-v1.js';
+    t.src = SITE + 'shared/theme-v1.js';
     t.onload = loadCore;
     document.head.appendChild(t);
   }
