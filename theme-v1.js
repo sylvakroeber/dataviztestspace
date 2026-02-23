@@ -23,8 +23,13 @@ window.TBL_THEME = {
     annotationBright: '#f28e2b',  // orange — prominent annotation lines and labels
     annotationDim:    '#bbb',     // gray   — subtle / secondary annotation lines
 
-    // Ordered palette for line series (index matches seriesDefs order)
-    series: ['#4e79a7', '#72A4D7']
+    // Named palettes — charts select by name; multiple palettes can be used simultaneously
+    palettes: {
+      // Graduated shades within the blue family — related/similar series
+      blues:       ['#4e79a7', '#72A4D7', '#a8c8e8', '#c6ddf0'],
+      // Maximally distinct colors — unrelated series that must be told apart at a glance
+      categorical: ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1', '#ff9da7']
+    }
   },
 
   typography: {

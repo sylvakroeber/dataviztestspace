@@ -36,15 +36,25 @@ window.TBL_THEME = {
   colors: {
     background, titleText, secondaryText, axisText,
     axisStroke, gridline, tooltip, cursor,
-    annotation,     // orange (#f28e2b) — horizontal avg line + label
-    annotationLine, // gray  (#bbb)    — vertical Jan 2025 line
-    series: ['#4e79a7', '#72A4D7', ...]  // ordered palette for line series
+    annotationBright,  // orange — prominent annotation lines and labels
+    annotationDim,     // gray   — subtle / secondary annotation lines
+    palettes: {
+      blues:       [...],  // graduated shades — related/similar series
+      categorical: [...],  // maximally distinct — unrelated series
+      // add more families here as needed (oranges, greens, …)
+    }
   },
   typography: { titleSize, titleWeight, bodySize, axisSize, annotationSize, smallSize },
   spacing:    { containerPadding, maxWidth, borderRadius, logoHeight, logoOpacity },
   chart:      { aspectRatio, margin, lineStrokeWidth }
 }
 ```
+
+### Palette selection
+
+**Simple chart (one palette):** set `data-palette="blues"` on the placeholder div — `chart.js` resolves it automatically via the fallback chain: named palette → `blues` → hardcoded defaults.
+
+**Complex chart (multiple palettes):** reference `TC.palettes.blues`, `TC.palettes.oranges`, etc. directly in `chartN.js`. The `data-palette` shorthand is bypassed; palette mapping lives in code where the logic warrants it.
 
 ### Versioning rule — protecting existing embeds
 

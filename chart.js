@@ -72,7 +72,8 @@
     const annotationBright = TC.annotationBright || '#f28e2b';
     const annotationDim    = TC.annotationDim    || '#bbb';
     const cursorColor   = TC.cursor          || '#999';
-    const seriesPalette = TC.series          || ['#4e79a7', '#72A4D7'];
+    const palettes      = TC.palettes        || {};
+    const seriesPalette = palettes[placeholder.dataset.palette] || palettes.blues || ['#4e79a7', '#72A4D7'];
 
     const titleSize    = TY.titleSize       || '18px';
     const titleWeight  = TY.titleWeight     || 600;
