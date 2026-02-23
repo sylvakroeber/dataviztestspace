@@ -33,6 +33,7 @@ window.TBL_THEME = {
   },
 
   typography: {
+    fontFamily:     "'Mallory', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
     titleSize:      '18px',
     titleMinSize:   '12px',  // floor when title scales down to fit on one line
     titleWeight:    600,

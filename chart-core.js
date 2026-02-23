@@ -80,6 +80,7 @@
     const annotSize    = TY.annotationSize || '12px';
     const smallSize    = TY.smallSize      || '11px';
     const titleMinSize = TY.titleMinSize   || '12px';
+    const fontFamily   = TY.fontFamily    || "'Mallory', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif";
 
     const titleSizePx    = parseFloat(titleSize);
     const titleMinSizePx = parseFloat(titleMinSize);
@@ -149,6 +150,7 @@
     styleEl.textContent = `
       ${c} {
         background: ${bg};
+        font-family: ${fontFamily};
         border-radius: ${contRadius};
         padding: ${contPadding};
         max-width: ${maxWidth};
@@ -184,6 +186,7 @@
         border-radius: 6px;
         padding: 9px 13px;
         font-size: ${bodySize};
+        font-family: ${fontFamily};
         line-height: 1.6;
         display: none;
         z-index: 9999;
