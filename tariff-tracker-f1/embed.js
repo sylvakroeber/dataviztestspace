@@ -16,7 +16,7 @@
   var me = document.currentScript;
   var div = document.createElement('div');
   div.setAttribute('data-tbl-chart', '');
-  div.setAttribute('data-logo', SITE + 'd3charts/TBL_ID_Graph_BrightBlue_KO.svg');
+  div.setAttribute('data-logo', SITE + 'tariff-tracker-f1/TBL_ID_Graph_BrightBlue_KO.svg');
   me.parentNode.insertBefore(div, me);
 
   function showLoadError(filename) {
@@ -43,8 +43,8 @@
   // Load order: theme → core → line chart engine → chart-specific logic
   loadScript('shared/theme-v1.js', function () {
     loadScript('shared/chart-core.js', function () {
-      loadScript('d3charts/linechart.js', function () {
-        loadScript('d3charts/chart.js');
+      loadScript('tariff-tracker-f1/linechart.js', function () {
+        loadScript('tariff-tracker-f1/chart.js');
       });
     });
   });
