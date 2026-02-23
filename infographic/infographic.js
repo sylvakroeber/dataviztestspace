@@ -302,14 +302,52 @@
       ]
     };
 
-    // Tooltip
-    var tip = document.createElement('div');
-    tip.style.cssText = 'position:fixed;pointer-events:none;display:none;background:' + theme.tooltipBg + ';color:#fff;padding:5px 10px;border-radius:4px;font-size:' + theme.bodySize + ';white-space:nowrap;z-index:9999;';
+    // Tooltip — two-part: bubble box + CSS-triangle arrow, centered on cursor X
+    var tipBg = theme.tooltipBg;
+    var tip    = document.createElement('div');
+    var tipBox = document.createElement('div');
+    var tipArr = document.createElement('div');
+
+    tip.style.cssText    = 'position:fixed;pointer-events:none;display:none;z-index:9999;transform:translateX(-50%);align-items:center;';
+    tipBox.style.cssText = 'background:' + tipBg + ';color:#fff;padding:8px 12px;border-radius:4px;font-family:' + theme.fontFamily + ';white-space:nowrap;line-height:1.5;';
+    tipArr.style.cssText = 'width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid ' + tipBg + ';align-self:center;';
+    tip.appendChild(tipBox);
+    tip.appendChild(tipArr);
     document.body.appendChild(tip);
 
-    function showTip(event, text) { tip.textContent = text; tip.style.display = 'block'; moveTip(event); }
-    function moveTip(event)       { tip.style.left = (event.clientX + 12) + 'px'; tip.style.top = (event.clientY - 36) + 'px'; }
-    function hideTip()            { tip.style.display = 'none'; }
+    var chartLabels = { annual: 'Annual Added Cost', lifetime: 'Lifetime Added Cost' };
+    var barLabels   = { auto: 'Auto Loan', mortgage: 'Mortgage', biz: 'Small Business Loan' };
+
+    function showTip(event, chartLabel, barLabel, value) {
+      var axSz = parseInt(theme.axisSize, 10);
+      tipBox.innerHTML =
+        '<span style="display:block;font-size:' + axSz + 'px;opacity:0.7;margin-bottom:2px;">' + chartLabel + '</span>' +
+        '<span style="display:flex;align-items:baseline;gap:10px;">' +
+          '<span style="font-size:' + theme.bodySize + ';font-weight:700;">' + barLabel + '</span>' +
+          '<span style="font-size:' + theme.bodySize + ';font-weight:700;">' + value + '</span>' +
+        '</span>';
+      tip.style.display = 'flex';
+      positionTip(event);
+    }
+
+    function positionTip(event) {
+      var gap  = 4;
+      var rect = tip.getBoundingClientRect();
+      tip.style.left = event.clientX + 'px';
+      if (event.clientY - rect.height - gap > 0) {
+        // Above cursor: box on top, arrow pointing down at bottom
+        tip.style.top           = (event.clientY - rect.height - gap) + 'px';
+        tip.style.flexDirection = 'column';
+        tipArr.style.cssText    = 'width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid ' + tipBg + ';align-self:center;';
+      } else {
+        // Below cursor: arrow pointing up at top, box below
+        tip.style.top           = (event.clientY + gap) + 'px';
+        tip.style.flexDirection = 'column-reverse';
+        tipArr.style.cssText    = 'width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:8px solid ' + tipBg + ';align-self:center;';
+      }
+    }
+
+    function hideTip() { tip.style.display = 'none'; }
 
     // Bar highlight via SVG opacity
     function highlightBar(svgEl, activeIdx) {
@@ -344,9 +382,10 @@
         onBarOver: function(idx, event) {
           highlightBar(svgEl, idx);
           highlightCard(section, idx);
-          showTip(event, '$' + datasets[section][idx].value.toLocaleString());
+          var d = datasets[section][idx];
+          showTip(event, chartLabels[section], barLabels[d.key], '$' + d.value.toLocaleString());
         },
-        onBarMove: moveTip,
+        onBarMove: positionTip,
         onBarOut: function() {
           resetBars(svgEl);
           resetCards(section);
