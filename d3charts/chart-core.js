@@ -283,6 +283,6 @@
     }
   }
 
-  window.TBL_CORE = { initChart, run, excelDateToYYYYMM };
+  window.TBL_CORE = { initChart, run, excelDateToYYYYMM, ensureDeps };
 
 })();

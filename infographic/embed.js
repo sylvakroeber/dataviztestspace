@@ -12,12 +12,20 @@
     document.head.appendChild(s);
   }
 
+  function loadCore() {
+    if (window.TBL_CORE) { loadInfographic(); return; }
+    var c = document.createElement('script');
+    c.src = SITE + 'd3charts/chart-core.js';
+    c.onload = loadInfographic;
+    document.head.appendChild(c);
+  }
+
   if (window.TBL_THEME) {
-    loadInfographic();
+    loadCore();
   } else {
     var t = document.createElement('script');
     t.src = SITE + 'd3charts/theme-v1.js';
-    t.onload = loadInfographic;
+    t.onload = loadCore;
     document.head.appendChild(t);
   }
 }());
