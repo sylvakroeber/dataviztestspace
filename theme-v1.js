@@ -34,6 +34,7 @@ window.TBL_THEME = {
 
   typography: {
     titleSize:      '18px',
+    titleMinSize:   '12px',  // floor when title scales down to fit on one line
     titleWeight:    600,
     bodySize:       '13px',  // legend, tooltip, unit label, error
     axisSize:       '11px',  // axis tick labels, y-axis label
@@ -52,7 +53,14 @@ window.TBL_THEME = {
   chart: {
     aspectRatio:     0.45,
     margin:          { top: 20, right: 30, bottom: 50, left: 60 },
-    lineStrokeWidth: '2.5px'
+    lineStrokeWidth: '2.5px',
+
+    // ── X-axis tick label density ─────────────────────────────────────────────
+    // Minimum pixel gap between tick marks before the interval steps up.
+    // Tick interval snaps through axisTickIntervals (values in months).
+    axisTickMinSpacing: 65,
+    axisTickIntervals:  [6, 12, 24]
+    // ─────────────────────────────────────────────────────────────────────────
   }
 
 };

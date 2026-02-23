@@ -81,6 +81,10 @@
     const axisSize     = TY.axisSize        || '11px';
     const annotSize    = TY.annotationSize  || '12px';
     const smallSize    = TY.smallSize       || '11px';
+    const titleMinSize = TY.titleMinSize    || '12px';
+
+    const titleSizePx    = parseFloat(titleSize);
+    const titleMinSizePx = parseFloat(titleMinSize);
 
     const contPadding  = TS.containerPadding || '24px 24px 15px';
     const maxWidth     = TS.maxWidth         || '900px';
@@ -88,9 +92,11 @@
     const logoHeight   = TS.logoHeight       || '32px';
     const logoOpacity  = TS.logoOpacity != null ? TS.logoOpacity : 0.85;
 
-    const aspectRatio  = TCH.aspectRatio     || 0.45;
-    const margin       = TCH.margin          || { top: 20, right: 30, bottom: 50, left: 60 };
-    const strokeWidth  = TCH.lineStrokeWidth || '2.5px';
+    const aspectRatio        = TCH.aspectRatio         || 0.45;
+    const margin             = TCH.margin              || { top: 20, right: 30, bottom: 50, left: 60 };
+    const strokeWidth        = TCH.lineStrokeWidth     || '2.5px';
+    const axisTickMinSpacing = TCH.axisTickMinSpacing  || 65;
+    const axisTickIntervals  = TCH.axisTickIntervals   || [6, 12, 24];
 
     // ── Inject HTML ───────────────────────────────────────────────────────────
     placeholder.innerHTML = `
@@ -128,6 +134,7 @@
         max-width: ${maxWidth};
         margin: 0 auto;
         position: relative;
+        --tbl-title-size: ${titleSize};
       }
       #${uid}-logo {
         position: absolute;
@@ -141,7 +148,7 @@
         align-items: flex-start;
         margin-bottom: 8px;
       }
-      #${uid}-title { font-size: ${titleSize}; font-weight: ${titleWeight}; color: ${titleColor}; }
+      #${uid}-title { font-size: var(--tbl-title-size); font-weight: ${titleWeight}; color: ${titleColor}; }
       #${uid}-unit  { font-size: ${bodySize}; color: ${secondary}; margin-top: 2px; }
       #${uid}-wrapper svg { display: block; width: 100%; }
       ${c} .axis text { font-size: ${axisSize}; fill: ${axisColor}; }
@@ -224,6 +231,22 @@
         const width  = totalWidth  - margin.left - margin.right;
         const height = totalHeight - margin.top  - margin.bottom;
 
+        // ── Title: stay at full size until text would wrap, then scale down ──────
+        // totalWidth is the reference because the title's parent flex item
+        // auto-sizes to content, making titleEl.clientWidth === scrollWidth always.
+        const container = el('container');
+        const titleEl = el('title');
+        titleEl.style.fontSize   = titleSizePx + 'px';
+        titleEl.style.whiteSpace = 'nowrap';
+        const titleNeeded = titleEl.scrollWidth;
+        titleEl.style.whiteSpace = '';
+        titleEl.style.fontSize   = '';
+        const titleFontSize = titleNeeded <= totalWidth
+          ? titleSizePx + 'px'
+          : Math.max(titleMinSizePx, Math.round(titleSizePx * totalWidth / titleNeeded)) + 'px';
+        container.style.setProperty('--tbl-title-size', titleFontSize);
+        // ─────────────────────────────────────────────────────────────────────────
+
         const svg = d3.select(`#${uid}-wrapper`)
           .append('svg')
           .attr('viewBox', `0 0 ${totalWidth} ${totalHeight}`)
@@ -260,10 +283,16 @@
           .attr('y1', 0).attr('y2', height)
           .attr('stroke', annotationDim).attr('stroke-width', 1).attr('stroke-dasharray', '4,4');
 
-        // Axes
+        // Axes — pick tick interval so labels don't overlap (~65px min spacing)
+        const [xMin, xMax] = x.domain();
+        const monthSpan   = d3.timeMonth.count(xMin, xMax);
+        const maxTicks    = Math.max(2, Math.floor(width / axisTickMinSpacing));
+        const rawEvery    = monthSpan / maxTicks;
+        const tickEvery   = axisTickIntervals.find(n => rawEvery <= n) || axisTickIntervals[axisTickIntervals.length - 1];
+
         g.append('g').attr('class', 'axis')
           .attr('transform', `translate(0,${height})`)
-          .call(d3.axisBottom(x).ticks(d3.timeMonth.every(6)).tickFormat(formatMonth))
+          .call(d3.axisBottom(x).ticks(d3.timeMonth.every(tickEvery)).tickFormat(formatMonth))
           .selectAll('text').attr('dy', '1.2em').style('text-anchor', 'middle');
 
         g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(6));

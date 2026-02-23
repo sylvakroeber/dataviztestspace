@@ -156,6 +156,7 @@ Multiple charts per page are supported — each `[data-tbl-chart]` placeholder g
 | `data-tbl-chart` | Yes | Marks the element as a chart placeholder |
 | `data-src` | Yes (for production) | URL to the `.xlsx` file (must be HTTP/HTTPS with CORS) |
 | `data-logo` | No | URL to the SVG logo; defaults to the relative path `TBL_ID_Graph_BrightBlue_KO.svg` |
+| `data-palette` | No | Named palette from `TBL_THEME.colors.palettes` (e.g. `"blues"`); defaults to `blues` |
 
 ### Isolation design
 
