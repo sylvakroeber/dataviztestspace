@@ -9,7 +9,7 @@
 if (!window.TBL_LINE) { console.error('[TBL] linechart.js must load before chart.js'); }
 
 TBL_LINE.run(
-  'https://raw.githubusercontent.com/sylvakroeber/dataviztestspace/main/tariff_impacts_results_20260216.xlsx',
+  'https://raw.githubusercontent.com/sylvakroeber/dataviztestspace/main/tariff-tracker-f1/tariff_impacts_results_20260216.xlsx',
 
   function ({ drawChart, showError, excelDateToYYYYMM, palette, DATA_SOURCE }) {
     return async function fetchAndRender() {
