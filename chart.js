@@ -104,8 +104,8 @@
       #${uid}-unit  { font-size: 13px; color: #888; margin-top: 2px; }
       #${uid}-wrapper svg { display: block; width: 100%; }
       ${c} .axis text { font-size: 11px; fill: #666; }
-      ${c} .axis path, ${c} .axis line { stroke: #e0e0e0; }
-      ${c} .gridline line { stroke: #f0f0f0; stroke-dasharray: 3,3; }
+      ${c} .axis path, ${c} .axis line { stroke: #e0e0e0; stroke-width: 1px; fill: none; }
+      ${c} .gridline line { stroke: #f0f0f0; stroke-width: 1px; stroke-dasharray: 3,3; }
       ${c} .line-path { fill: none; stroke-width: 2.5px; transition: opacity 0.3s; }
       ${c} .dot { transition: r 0.15s; cursor: pointer; }
       #${uid}-tooltip {
