@@ -26,7 +26,7 @@ window.TBL_THEME = {
     // Named palettes — charts select by name; multiple palettes can be used simultaneously
     palettes: {
       // Graduated shades within the blue family — related/similar series
-      blues:       ['#1b3499', '#286dc0', '#63aaff', '#d9eaff'],
+      blues:       ['#286dc0', '#63aaff', '#d9eaff'],
       // Maximally distinct colors — unrelated series that must be told apart at a glance
       categorical: ['#286dc0', '#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1', '#ff9da7']
     }
