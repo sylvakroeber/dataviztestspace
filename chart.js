@@ -35,6 +35,7 @@ TBL_LINE.run(
 
         drawChart({
           title:               rows[0][0] || 'Chart',
+          credit:              rows[3][0] ? (String(rows[3][0]).startsWith('Source: ') ? rows[3][0] : 'Source: ' + rows[3][0]) : '',
           unit:                'Billions USD',
           series,
           avgValue:            dataRows.length ? +dataRows[0][3] / 1000 : null,

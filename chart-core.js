@@ -104,7 +104,7 @@
     const legendHiddenOpacity     = TCH.legendHiddenOpacity     || 0.15;
     const legendHiddenItemOpacity = TCH.legendHiddenItemOpacity || 0.4;
 
-    const defaultCredit   = TD.creditText   || 'Chart: The Budget Lab \u00b7 Source: The Budget Lab Analysis';
+    const defaultCredit   = TD.creditText   != null ? TD.creditText   : '';
     const defaultFootnote = TD.footnoteText || '';
 
     // ── Inject HTML ───────────────────────────────────────────────────────────

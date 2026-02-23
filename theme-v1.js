@@ -52,7 +52,7 @@ window.TBL_THEME = {
   },
 
   defaults: {
-    creditText:   'Chart: The Budget Lab \u00b7 Source: The Budget Lab Analysis',
+    creditText:   '',
     footnoteText: ''
   },
 
