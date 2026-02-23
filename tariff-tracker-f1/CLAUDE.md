@@ -4,7 +4,7 @@
 
 This project is a D3 line chart that reads data from an Excel file (`.xlsx`) in the browser using SheetJS. The architecture is split into three layers:
 
-- **`chart-core.js`** — universal infrastructure shared by all chart types; sets `window.TBL_CORE`
+- **`../shared/chart-core.js`** — universal infrastructure shared by all chart types; sets `window.TBL_CORE`
 - **`linechart.js`** — line chart rendering engine; sets `window.TBL_LINE`
 - **`chart.js`** — Chart 1 data logic only (~70 lines); calls `TBL_LINE.run(...)`
 
@@ -21,14 +21,19 @@ Fonts are intentionally omitted from chart styles — inherited from the host pa
 | File | Purpose |
 |------|---------|
 | `chart.html` | Standalone preview page — thin shell that loads the script stack |
-| `chart-core.js` | Universal infrastructure — sets `window.TBL_CORE`; shared across all chart types |
 | `linechart.js` | Line chart rendering engine — sets `window.TBL_LINE`; depends on chart-core.js |
 | `chart.js` | Chart 1 data logic only — seriesDefs, transforms, annotations; calls `TBL_LINE.run()` |
-| `theme-v1.js` | Budget Lab house style — sets `window.TBL_THEME`; versioned filename |
 | `embed.js` | Loader for host sites; fetches theme + core + line + chart from GitHub |
 | `tariff_impacts_results_20260216.xlsx` | Data source — read client-side via SheetJS |
 | `TBL_ID_Graph_BrightBlue_KO.svg` | Budget Lab logo (blue graph, navy text on transparent background) |
 | `TBL_ID_Graph_BrightBlue_K.svg` | Alternate logo variant with black text (not currently used in chart) |
+
+Shared infrastructure (repo-wide, lives in `../shared/`):
+
+| File | Purpose |
+|------|---------|
+| `../shared/theme-v1.js` | Budget Lab house style — sets `window.TBL_THEME`; versioned filename |
+| `../shared/chart-core.js` | Universal infrastructure — sets `window.TBL_CORE`; shared across all chart types |
 
 ---
 
@@ -149,11 +154,11 @@ A minimal standalone preview page — no logic of its own. Pre-loads D3, SheetJS
 <head>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-  <script src="theme-v1.js"></script>
+  <script src="../shared/theme-v1.js"></script>
 </head>
 <body>
   <div data-tbl-chart data-logo="TBL_ID_Graph_BrightBlue_KO.svg"></div>
-  <script src="chart-core.js"></script>
+  <script src="../shared/chart-core.js"></script>
   <script src="linechart.js"></script>
   <script src="chart.js"></script>
 </body>
@@ -200,10 +205,10 @@ Fonts are intentionally omitted — inherited from the host page.
 
 `embed.js` is a small loader kept on the host site. It loads scripts in four stages — theme → core → line chart engine → chart — so each layer is guaranteed to be present before the next one initialises. All chart logic, CSS, and HTML injection live in the shared layers.
 
-The one value that needs to be set in `embed.js` is `BASE` — the GitHub Pages base URL:
+The one value that needs to be set in `embed.js` is `SITE` — the GitHub Pages root URL:
 
 ```javascript
-var BASE = 'https://YOUR-USERNAME.github.io/YOUR-REPO/';
+var SITE = 'https://YOUR-USERNAME.github.io/YOUR-REPO/';
 ```
 
 Once set, `embed.js` never needs to change again — future chart updates are deployed by pushing new files to GitHub.
