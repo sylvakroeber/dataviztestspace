@@ -257,8 +257,8 @@
             .attr('x1', 0).attr('x2', width).attr('y1', ay).attr('y2', ay)
             .attr('stroke', '#f28e2b').attr('stroke-width', 1.5).attr('stroke-dasharray', '5,4');
           g.append('text')
-            .attr('x', x(new Date('2021-08-01'))).attr('y', ay + 14)
-            .attr('text-anchor', 'start').attr('font-size', '10px').attr('fill', '#f28e2b')
+            .attr('x', x(new Date('2023-02-01'))).attr('y', ay - 10)
+            .attr('text-anchor', 'start').attr('font-size', '12px').attr('fill', '#f28e2b')
             .text(data.avgLabel || 'Avg');
         }
 
