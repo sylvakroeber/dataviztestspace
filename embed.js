@@ -1,5 +1,4 @@
-// Update this URL to wherever chart.js is hosted on GitHub Pages
-var CHART_JS = 'https://YOUR-USERNAME.github.io/YOUR-REPO/chart.js';
+var CHART_JS = 'https://sylvakroeber.github.io/dataviztestspace/chart.js';
 
 (function () {
   var s = document.createElement('script');
