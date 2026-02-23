@@ -50,6 +50,11 @@ window.TBL_THEME = {
     logoOpacity:      0.85
   },
 
+  defaults: {
+    creditText:   'Chart: The Budget Lab \u00b7 Source: The Budget Lab Analysis',
+    footnoteText: ''
+  },
+
   chart: {
     aspectRatio:     0.45,
     margin:          { top: 20, right: 30, bottom: 50, left: 60 },
@@ -59,8 +64,16 @@ window.TBL_THEME = {
     // Minimum pixel gap between tick marks before the interval steps up.
     // Tick interval snaps through axisTickIntervals (values in months).
     axisTickMinSpacing: 65,
-    axisTickIntervals:  [6, 12, 24]
+    axisTickIntervals:  [6, 12, 24],
     // ─────────────────────────────────────────────────────────────────────────
+
+    yDomainPadding:          1.1,    // multiplier on d3.max for y-axis upper bound
+    yTickCount:              6,      // y-axis tick count passed to d3.axisLeft.ticks(N)
+    lineCurve:               'monotoneX',  // d3.curve* name (without 'curve' prefix)
+    tooltipOffsetX:          16,     // px right of cursor (flips left near viewport edge)
+    tooltipOffsetY:          36,     // px above cursor
+    legendHiddenOpacity:     0.15,   // line opacity when series toggled off
+    legendHiddenItemOpacity: 0.4     // legend label/swatch opacity when toggled off
   }
 
 };

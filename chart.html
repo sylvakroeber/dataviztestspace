@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Pre-load dependencies so chart.js skips its dynamic CDN injection -->
+  <!-- Pre-load dependencies so chart-core.js skips its dynamic CDN injection -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="theme-v1.js"></script>
 </head>
 <body>
   <div data-tbl-chart
-       data-src="tariff_impacts_results_20260216.xlsx"
-       data-logo="TBL_ID_Graph_BrightBlue_KO.svg"
-       data-palette="blues">
+       data-logo="TBL_ID_Graph_BrightBlue_KO.svg">
   </div>
+  <script src="chart-core.js"></script>
+  <script src="linechart.js"></script>
   <script src="chart.js"></script>
 </body>
 </html>
