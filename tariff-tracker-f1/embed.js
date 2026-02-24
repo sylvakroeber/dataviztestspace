@@ -43,7 +43,7 @@
   // Load order: theme → core → line chart engine → chart-specific logic
   loadScript('shared/theme-v1.js', function () {
     loadScript('shared/chart-core.js', function () {
-      loadScript('tariff-tracker-f1/linechart.js', function () {
+      loadScript('shared/linechart.js', function () {
         loadScript('tariff-tracker-f1/chart.js');
       });
     });

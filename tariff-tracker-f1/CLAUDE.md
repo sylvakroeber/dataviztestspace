@@ -5,7 +5,7 @@
 This project is a D3 line chart that reads data from an Excel file (`.xlsx`) in the browser using SheetJS. The architecture is split into three layers:
 
 - **`../shared/chart-core.js`** — universal infrastructure shared by all chart types; sets `window.TBL_CORE`
-- **`linechart.js`** — line chart rendering engine; sets `window.TBL_LINE`
+- **`../shared/linechart.js`** — line chart rendering engine; sets `window.TBL_LINE`
 - **`chart.js`** — Chart 1 data logic only (~70 lines); calls `TBL_LINE.run(...)`
 
 Two consumers:
@@ -21,7 +21,7 @@ Fonts are intentionally omitted from chart styles — inherited from the host pa
 | File | Purpose |
 |------|---------|
 | `chart.html` | Standalone preview page — thin shell that loads the script stack |
-| `linechart.js` | Line chart rendering engine — sets `window.TBL_LINE`; depends on chart-core.js |
+| `../shared/linechart.js` | Line chart rendering engine — sets `window.TBL_LINE`; depends on chart-core.js |
 | `chart.js` | Chart 1 data logic only — seriesDefs, transforms, annotations; calls `TBL_LINE.run()` |
 | `embed.js` | Loader for host sites; fetches theme + core + line + chart from GitHub |
 | `tariff_impacts_results_20260216.xlsx` | Data source — read client-side via SheetJS |
@@ -159,7 +159,7 @@ A minimal standalone preview page — no logic of its own. Pre-loads D3, SheetJS
 <body>
   <div data-tbl-chart data-logo="TBL_ID_Graph_BrightBlue_KO.svg"></div>
   <script src="../shared/chart-core.js"></script>
-  <script src="linechart.js"></script>
+  <script src="../shared/linechart.js"></script>
   <script src="chart.js"></script>
 </body>
 ```
