@@ -1,14 +1,14 @@
 /**
  * Chart 1 — Customs Duty Revenue
  * --------------------------------
- * Data logic only. Infrastructure: chart-core.js + linechart.js.
+ * Data logic only. Infrastructure: chart-core.js + shared/chart.js.
  *
  * seriesDefs, sheet config, data transforms, and annotation values
  * all live here. Visual styling is inherited from theme-v1.js.
  */
-if (!window.TBL_LINE) { console.error('[TBL] linechart.js must load before chart.js'); }
+if (!window.TBL_CHART) { console.error('[TBL] shared/chart.js must load before tariff-tracker-f1/chart.js'); }
 
-TBL_LINE.run(
+TBL_CHART.run(
   'https://raw.githubusercontent.com/sylvakroeber/dataviztestspace/main/tariff-tracker-f1/tariff_impacts_results_20260216.xlsx',
 
   function ({ drawChart, showError, excelDateToYYYYMM, palette, DATA_SOURCE }) {
@@ -26,6 +26,7 @@ TBL_LINE.run(
           { name: 'Customs duties (nominal USD)', color: palette[0], col: 1 },
           { name: 'Customs duties (2025 USD)',    color: palette[1], col: 2 },
         ].map(s => ({
+          type:  'line',
           name:  s.name,
           color: s.color,
           data:  dataRows

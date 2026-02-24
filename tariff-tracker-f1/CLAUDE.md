@@ -5,8 +5,8 @@
 This project is a D3 line chart that reads data from an Excel file (`.xlsx`) in the browser using SheetJS. The architecture is split into three layers:
 
 - **`../shared/chart-core.js`** — universal infrastructure shared by all chart types; sets `window.TBL_CORE`
-- **`../shared/linechart.js`** — line chart rendering engine; sets `window.TBL_LINE`
-- **`chart.js`** — Chart 1 data logic only (~70 lines); calls `TBL_LINE.run(...)`
+- **`../shared/chart.js`** — unified chart renderer (bar, line, combo); sets `window.TBL_CHART`
+- **`chart.js`** — Chart 1 data logic only (~55 lines); calls `TBL_CHART.run(...)`
 
 Two consumers:
 - **`chart.html`** — minimal standalone preview page for development
@@ -21,12 +21,9 @@ Fonts are intentionally omitted from chart styles — inherited from the host pa
 | File | Purpose |
 |------|---------|
 | `chart.html` | Standalone preview page — thin shell that loads the script stack |
-| `../shared/linechart.js` | Line chart rendering engine — sets `window.TBL_LINE`; depends on chart-core.js |
-| `chart.js` | Chart 1 data logic only — seriesDefs, transforms, annotations; calls `TBL_LINE.run()` |
+| `chart.js` | Chart 1 data logic only — seriesDefs, transforms, annotations; calls `TBL_CHART.run()` |
 | `embed.js` | Loader for host sites; fetches theme + core + line + chart from GitHub |
 | `tariff_impacts_results_20260216.xlsx` | Data source — read client-side via SheetJS |
-| `TBL_ID_Graph_BrightBlue_KO.svg` | Budget Lab logo (blue graph, navy text on transparent background) |
-| `TBL_ID_Graph_BrightBlue_K.svg` | Alternate logo variant with black text (not currently used in chart) |
 
 Shared infrastructure (repo-wide, lives in `../shared/`):
 
@@ -34,6 +31,9 @@ Shared infrastructure (repo-wide, lives in `../shared/`):
 |------|---------|
 | `../shared/theme-v1.js` | Budget Lab house style — sets `window.TBL_THEME`; versioned filename |
 | `../shared/chart-core.js` | Universal infrastructure — sets `window.TBL_CORE`; shared across all chart types |
+| `../shared/chart.js` | Unified renderer — sets `window.TBL_CHART`; supports bar, line, and combo series |
+| `../shared/TBL_ID_Graph_BrightBlue_KO.svg` | Budget Lab logo (blue graph, navy text on transparent background) |
+| `../shared/TBL_ID_Graph_BrightBlue_K.svg` | Alternate logo variant with black text (not currently used) |
 
 ---
 
@@ -78,15 +78,15 @@ window.TBL_THEME = {
 
 ### Palette selection
 
-Palette is passed as the optional third argument to `TBL_LINE.run()` in `chartN.js`:
+Palette is passed as the optional third argument to `TBL_CHART.run()` in `chartN.js`:
 
 ```javascript
-TBL_LINE.run('data.xlsx', makeChartFn, 'blues');
+TBL_CHART.run('data.xlsx', makeChartFn, 'blue');
 ```
 
-Resolution order: named palette → `blues` → hardcoded defaults. `chart-core.js` resolves the palette and makes it available to both `drawChart` (via `ctx.palette`) and the data factory (via `tools.palette`).
+Resolution order: named palette → `categorical` → hardcoded defaults. `chart-core.js` resolves the palette and makes it available to both `drawChart` (via `ctx.palette`) and the data factory (via `tools.palette`).
 
-**Complex chart (multiple palettes):** reference `TBL_THEME.colors.palettes.blues`, etc. directly in `chartN.js`. The palette argument is bypassed; palette mapping lives in code where the logic warrants it.
+**Complex chart (multiple palettes):** reference `TBL_THEME.colors.palettes.blue`, etc. directly in `chartN.js`. The palette argument is bypassed; palette mapping lives in code where the logic warrants it.
 
 ### Versioning rule — protecting existing embeds
 
@@ -101,15 +101,12 @@ Resolution order: named palette → `blues` → hardcoded defaults. `chart-core.
 
 ### Pattern for future charts
 
-**New line chart** (same rendering engine, different data):
-1. A `chartN.js` — `TBL_LINE.run(src, makeChartFn, palette?)` with seriesDefs, transforms, annotations (~70 lines)
-2. An `embedN.js` — four-stage load: theme → core → linechart → chartN
+**New chart** (any series type — line, bar, combo):
+1. A `chartN.js` — `TBL_CHART.run(src, makeChartFn, palette?)` with seriesDefs, transforms, annotations
+2. An `embedN.js` — four-stage load: theme → core → chart → chartN
 3. All styling inherited from the theme; no style definitions in chartN.js
 
-**New chart type** (new rendering engine):
-1. A `barchart.js` (or similar) — rendering engine that calls `TBL_CORE.run(barChartDrawFactory, fn, src, pal)` and sets `window.TBL_BAR`
-2. A `chartN.js` — data logic that calls `TBL_BAR.run(...)`
-3. An `embedN.js` — loads theme → core → barchart → chartN
+`TBL_CHART` supports `type: 'line'` and `type: 'bar'` series, mixed in any combination, on one or two Y axes.
 
 **`tools` API** (passed to `makeChartFn` by `TBL_CORE`):
 
@@ -157,9 +154,9 @@ A minimal standalone preview page — no logic of its own. Pre-loads D3, SheetJS
   <script src="../shared/theme-v1.js"></script>
 </head>
 <body>
-  <div data-tbl-chart data-logo="TBL_ID_Graph_BrightBlue_KO.svg"></div>
+  <div data-tbl-chart data-logo="../shared/TBL_ID_Graph_BrightBlue_KO.svg"></div>
   <script src="../shared/chart-core.js"></script>
-  <script src="../shared/linechart.js"></script>
+  <script src="../shared/chart.js"></script>
   <script src="chart.js"></script>
 </body>
 ```
@@ -233,7 +230,7 @@ Multiple charts per page are supported — each `[data-tbl-chart]` placeholder g
 | Attribute | Required | Description |
 |-----------|----------|-------------|
 | `data-tbl-chart` | Yes | Marks the element as a chart placeholder |
-| `data-logo` | No | URL to the SVG logo; defaults to the relative path `TBL_ID_Graph_BrightBlue_KO.svg` |
+| `data-logo` | No | URL to the SVG logo; defaults to `shared/TBL_ID_Graph_BrightBlue_KO.svg` relative to the repo root |
 
 `data-src` and `data-palette` are no longer used — the data source and palette are declared in `chart.js`.
 
@@ -256,12 +253,12 @@ The main reason not to simply reference `chart.html` via a `<script>` tag is tha
 3. **`initChart(placeholder, drawChartFactory, makeChartFn, dataSource, palette)`** — chart factory called once per `[data-tbl-chart]` element. Reads `window.TBL_THEME`, generates UID, injects HTML and scoped CSS, then calls `ensureDeps()`. After deps load, calls `drawChartFactory(ctx)` → `drawChart`, then `makeChartFn(tools)` → `fetchAndRender`. Boots chart and wires 200ms resize debounce.
 4. **`run(drawChartFactory, makeChartFn, dataSource, palette)`** — queries all `[data-tbl-chart]`, calls `initChart` for each, with `DOMContentLoaded` guard.
 
-**`linechart.js`** (`window.TBL_LINE`):
-1. **`lineChartDrawFactory(ctx)`** — receives full `ctx` from core; returns instance-bound `drawChart(data)` with the complete D3 rendering block.
-2. **`TBL_LINE.run(src, fn, pal)`** — calls `TBL_CORE.run(lineChartDrawFactory, fn, src, pal)`.
+**`shared/chart.js`** (`window.TBL_CHART`):
+1. **`chartDrawFactory(ctx)`** — receives full `ctx` from core; returns instance-bound `drawChart(data)` supporting `type: 'line'` and `type: 'bar'` series in any combination.
+2. **`TBL_CHART.run(src, fn, pal)`** — calls `TBL_CORE.run(chartDrawFactory, fn, src, pal)`.
 
-**`chart.js`** (Chart 1):
-- Calls `TBL_LINE.run(dataSource, makeChartFn, palette)`.
+**`tariff-tracker-f1/chart.js`** (Chart 1):
+- Calls `TBL_CHART.run(dataSource, makeChartFn, palette)`.
 - `makeChartFn` receives `tools` and returns `fetchAndRender` — an async function that fetches the xlsx, parses it, and calls `drawChart(data)`.
 
 ---
@@ -300,6 +297,8 @@ The main reason not to simply reference `chart.html` via a `<script>` tag is tha
 
 ## SVG Logo Notes
 
-- `TBL_ID_Graph_BrightBlue_KO.svg`: white/KO variant — text fill changed from `#FFFFFF` to `#101f5b` (navy) to work on a white background without a colored backing rectangle.
+Both logo SVGs live in `../shared/` (repo-wide asset, not chart-specific).
+
+- `../shared/TBL_ID_Graph_BrightBlue_KO.svg`: white/KO variant — text fill changed from `#FFFFFF` to `#101f5b` (navy) to work on a white background without a colored backing rectangle.
 - `viewBox` on both SVGs was tightened from `0 0 252 108` to `15 24 222 60` to remove excess whitespace around the artwork.
-- The `K` variant (`*K.svg`) has black text and is kept as an alternate but is not currently referenced in `chart.html`.
+- The `K` variant (`*K.svg`) has black text and is kept as an alternate but is not currently referenced.

@@ -3,7 +3,7 @@
  * ----------------------
  * Drop this <script> tag wherever the chart should appear on a host page.
  * It creates the placeholder div, then loads the script stack in order:
- *   theme → core → line chart engine → chart
+ *   theme → core → chart engine → chart
  *
  * The only value to change per deployment is SITE.
  */
@@ -40,10 +40,10 @@
     document.head.appendChild(s);
   }
 
-  // Load order: theme → core → line chart engine → chart-specific logic
+  // Load order: theme → core → chart engine → chart-specific logic
   loadScript('shared/theme-v1.js', function () {
     loadScript('shared/chart-core.js', function () {
-      loadScript('shared/linechart.js', function () {
+      loadScript('shared/chart.js', function () {
         loadScript('tariff-tracker-f1/chart.js');
       });
     });
