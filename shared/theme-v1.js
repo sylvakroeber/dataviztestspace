@@ -34,7 +34,7 @@ window.TBL_THEME = {
 
       // Monochromatic 5-shade scales — darkest to lightest
       // Base color (position 2) matches the corresponding categorical slot
-      tblBlues: ['#101f5b', '#1b3499', '#286dc0', '#63aaff', '#d9eaff'],
+      blue:     ['#101f5b', '#1b3499', '#286dc0', '#63aaff', '#d9eaff'],
       lime:   ['#243600', '#3d5e00', '#5e9e00', '#93c843', '#b4dc78'],
       violet: ['#2a1060', '#4a2498', '#7040c8', '#9068d8', '#b89ee8'],
       green:  ['#00401b', '#00702f', '#00a846', '#3ca869', '#73be92'],
