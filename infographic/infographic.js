@@ -5,7 +5,7 @@
     var C  = T.colors || {};
     var Ty = T.typography || {};
     var S  = T.spacing || {};
-    var blues = ((C.palettes || {}).blues)       || ['#286dc0', '#63aaff', '#d9eaff'];
+    var blues = ((C.palettes || {}).blue)        || ['#101f5b', '#1b3499', '#286dc0', '#63aaff', '#d9eaff'];
     var cat   = ((C.palettes || {}).categorical) || ['#286dc0','#e15759','#76b7b2','#59a14f','#edc948','#b07aa1','#ff9da7'];
     return {
       fontFamily:     Ty.fontFamily     || "system-ui, -apple-system, sans-serif",
@@ -19,10 +19,10 @@
       tooltipBg:      C.tooltip         || 'rgba(20,20,40,0.65)',
       borderRadius:   S.borderRadius    || '8px',
       maxWidth:       S.maxWidth        || '900px',
-      colorAuto:      blues[0]               || '#286dc0',
+      colorAuto:      blues[2]               || '#286dc0',
       colorMortgage:  C.annotationBright     || '#f28e2b',
       colorBiz:       cat[5]                 || '#b07aa1',
-      calcBg:         blues[2]               || '#d9eaff',
+      calcBg:         blues[4]               || '#d9eaff',
     };
   }
 
