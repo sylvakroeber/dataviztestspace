@@ -30,7 +30,7 @@ shared/chart.js      → window.TBL_CHART   unified renderer (bar, line, combo)
 | `chart-core.js` | `window.TBL_CORE` | HTML/CSS injection, dep loading, resize debounce, shared D3 helpers |
 | `chart.js` | `window.TBL_CHART` | Unified renderer — bar, line, combo; calls TBL_CORE |
 | `tbl-logo-blue.svg` | — | Budget Lab logo, navy text on transparent background (primary) |
-| `TBL_ID_Graph_BrightBlue_K.svg` | — | Alternate logo variant with black text (not currently in use) |
+| `tbl-logo-white.svg` | — | Alternate logo variant with white text — use on dark backgrounds |
 
 ---
 
