@@ -23,6 +23,7 @@
       colorMortgage:  C.annotationBright     || '#f28e2b',
       colorBiz:       cat[5]                 || '#b07aa1',
       calcBg:         blues[4]               || '#d9eaff',
+      calcBtnBg:      blues[0]               || '#101f5b',
     };
   }
 
@@ -83,7 +84,7 @@
       u + ' .loan-btn.active[data-value="auto"]     { background: ' + theme.colorAuto + ';     border-color: ' + theme.colorAuto + ';     color: #fff; }',
       u + ' .loan-btn.active[data-value="mortgage"] { background: ' + theme.colorMortgage + '; border-color: ' + theme.colorMortgage + '; color: #fff; }',
       u + ' .loan-btn.active[data-value="business"] { background: ' + theme.colorBiz + ';      border-color: ' + theme.colorBiz + ';      color: #fff; }',
-      '#' + uid + '-calcBtn { padding: 10px 24px; background: ' + theme.titleText + '; color: #fff; border: none; border-radius: ' + theme.borderRadius + '; font-size: ' + theme.bodySize + '; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: block; margin: 4px auto 0; }',
+      '#' + uid + '-calcBtn { padding: 10px 24px; background: ' + theme.calcBtnBg + '; color: #fff; border: none; border-radius: ' + theme.borderRadius + '; font-size: ' + theme.bodySize + '; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: block; margin: 4px auto 0; }',
       '#' + uid + '-calcBtn:hover { opacity: 0.85; }',
       u + ' .calc-result { font-size: ' + theme.bodySize + '; line-height: 1.9; width: 100%; }',
       u + ' .result-amount { font-size: clamp(20px, 3vw, 26px); font-weight: 800; color: ' + theme.titleText + '; }',
