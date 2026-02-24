@@ -1,0 +1,37 @@
+# Chart configuration — Tariff Tracker Figure 1
+# ----------------------------------------------
+# Consumed by shared/chart-runner.js.
+# See shared/chart-runner-guide.md for full option reference.
+
+title:    "Figure 1. Customs Duty Revenue (Inflation-Adjusted)"
+unit:     "Billions USD"
+palette:  blue
+credit:   "Source: Budget Lab at Yale"
+footnote: ""
+
+# Data file (relative to this config, or absolute URL)
+data:       data.csv
+dateColumn: date
+
+series:
+  - name:   "Customs duties (nominal USD)"
+    type:   line
+    column: customs_nominal_bn
+
+  - name:   "Customs duties (2025 USD)"
+    type:   line
+    column: customs_2025_bn
+
+# Horizontal dashed annotation — value read from a column (first non-null row)
+avgColumn:   avg_2022_2024_bn
+avgLabel:    "2022\u20132024 avg (2025 USD)"
+avgLabelDate: "2023-02-01"
+
+# Vertical dotted annotations
+verticalAnnotations:
+  - date:  "2025-01-01"
+    color: dim
+
+# Tooltip: "$X.X billion"  (auto precision = 1 decimal unless near-integer)
+tooltipPrefix: "$"
+tooltipSuffix: " billion"

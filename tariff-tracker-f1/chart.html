@@ -3,17 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Pre-load dependencies so chart-core.js skips its dynamic CDN injection -->
+  <!-- Pre-load D3 so chart-core.js skips its dynamic CDN injection.
+       SheetJS is NOT loaded — this chart uses CSV + chart-runner.js. -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script src="../shared/theme-v1.js"></script>
 </head>
 <body>
   <div data-tbl-chart
+       data-chart-base="./"
+       data-no-xlsx=""
        data-logo="../shared/tbl-logo-blue.svg">
   </div>
   <script src="../shared/chart-core.js"></script>
   <script src="../shared/chart.js"></script>
-  <script src="chart.js"></script>
+  <script src="../shared/chart-runner.js"></script>
 </body>
 </html>

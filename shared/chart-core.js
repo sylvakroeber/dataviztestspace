@@ -48,7 +48,7 @@
   // dataSource and palette are passed explicitly; data-logo remains a div attribute.
   function initChart(placeholder, drawChartFactory, makeChartFn, dataSource, palette) {
     const uid         = 'tbl-' + Math.random().toString(36).slice(2, 8);
-    const DATA_SOURCE = dataSource || 'tariff_impacts_results_20260216.xlsx';
+    const DATA_SOURCE = dataSource || '';
     const LOGO_SRC    = placeholder.dataset.logo || 'shared/tbl-logo-blue.svg';
 
     // ── Theme values (window.TBL_THEME if loaded, else hardcoded fallbacks) ──
@@ -229,8 +229,9 @@
       }`;
     document.head.appendChild(styleEl);
 
-    // ── Load D3 + SheetJS, then wire up the chart ─────────────────────────────
-    ensureDeps().then(() => {
+    // ── Load D3 (+ SheetJS unless data-no-xlsx is set), then wire up the chart ─
+    const skipXlsx = 'noXlsx' in placeholder.dataset;
+    ensureDeps(skipXlsx ? { xlsx: false } : {}).then(() => {
 
       const ctx = {
         uid, el, ttEl,

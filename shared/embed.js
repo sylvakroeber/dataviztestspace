@@ -1,26 +1,40 @@
 /**
- * Tariff Tracker F1 — embed loader
- * ----------------------------------
- * Legacy per-chart embed file. Delegates to the universal shared/embed.js
- * loader pattern. Kept for backward compatibility with any existing embeds.
+ * TBL Universal Chart Embed Loader
+ * ---------------------------------
+ * Drop this <script> tag wherever a chart should appear on a host page.
+ * The data-chart attribute identifies which chart to load.
  *
- * Preferred usage on host pages (no need for this file):
+ * Usage:
  *   <script data-chart="tariff-tracker-f1"
  *           src="https://sylvakroeber.github.io/dataviztestspace/shared/embed.js">
  *   </script>
+ *
+ * The loader:
+ *   1. Creates the placeholder <div> immediately before the <script> tag
+ *   2. Loads theme → core → chart engine → chart-runner in order
+ *   3. chart-runner auto-initialises by scanning for [data-chart-base] divs
+ *
+ * The only value to change per deployment is SITE.
  */
 (function () {
   'use strict';
 
-  var SITE    = 'https://sylvakroeber.github.io/dataviztestspace/';
-  var CHART   = 'tariff-tracker-f1';
+  var SITE = 'https://sylvakroeber.github.io/dataviztestspace/';
 
-  var me  = document.currentScript;
+  var me      = document.currentScript;
+  var chartId = me.getAttribute('data-chart');
+
+  if (!chartId) {
+    console.error('[TBL] embed.js: the data-chart attribute is required, e.g. data-chart="tariff-tracker-f1"');
+    return;
+  }
+
+  // Insert the placeholder div immediately before this <script> tag
   var div = document.createElement('div');
   div.setAttribute('data-tbl-chart',  '');
-  div.setAttribute('data-chart-base', SITE + CHART + '/');
+  div.setAttribute('data-chart-base', SITE + chartId + '/');
   div.setAttribute('data-logo',       SITE + 'shared/tbl-logo-blue.svg');
-  div.setAttribute('data-no-xlsx',    '');
+  div.setAttribute('data-no-xlsx',    '');   // runner uses CSV; skip SheetJS
   me.parentNode.insertBefore(div, me);
 
   function showLoadError(filename) {
@@ -44,6 +58,7 @@
     document.head.appendChild(s);
   }
 
+  // Load order: theme → core → chart engine → runner (runner auto-initialises)
   loadScript('shared/theme-v1.js', function () {
     loadScript('shared/chart-core.js', function () {
       loadScript('shared/chart.js', function () {

@@ -2,20 +2,31 @@
 
 ## Overview
 
-All charts in this repo share three files that live here. Chart-specific code (data fetching, series definitions, annotations) lives in each chart's own directory and calls `TBL_CHART.run()`. Nothing chart-specific belongs in `shared/`.
+All charts in this repo share infrastructure files that live here. Chart-specific files are two things: a `config.yaml` (declarative spec) and a `data.csv` — no JavaScript required for standard charts.
 
 ```
-shared/theme-v1.js   → window.TBL_THEME   visual constants
-shared/chart-core.js → window.TBL_CORE    infrastructure + D3 helpers
-shared/chart.js      → window.TBL_CHART   unified renderer (bar, line, combo)
+shared/theme-v1.js      → window.TBL_THEME   visual constants
+shared/chart-core.js    → window.TBL_CORE    infrastructure + D3 helpers
+shared/chart.js         → window.TBL_CHART   unified renderer (bar, line, combo)
+shared/chart-runner.js  → window.TBL_RUNNER  config-driven initialiser
+shared/embed.js                               universal embed loader (one script tag per chart)
 ```
 
-**Load order for every chart:**
+**Standard chart — load order:**
 ```html
 <script src="../shared/theme-v1.js"></script>   <!-- optional but recommended -->
 <script src="../shared/chart-core.js"></script>
 <script src="../shared/chart.js"></script>
-<script src="chart.js"></script>                <!-- chart-specific logic -->
+<script src="../shared/chart-runner.js"></script>
+<!-- chart-runner auto-initialises any [data-tbl-chart][data-chart-base] on the page -->
+```
+
+**Custom-code chart (escape hatch) — load order:**
+```html
+<script src="../shared/theme-v1.js"></script>
+<script src="../shared/chart-core.js"></script>
+<script src="../shared/chart.js"></script>
+<script src="chart.js"></script>   <!-- custom makeChartFn; calls TBL_CHART.run() -->
 ```
 
 `chart-core.js` reads every theme value with `|| fallback`, so `theme-v1.js` is optional and the chart still works without it (useful for local development without a server).
@@ -29,6 +40,9 @@ shared/chart.js      → window.TBL_CHART   unified renderer (bar, line, combo)
 | `theme-v1.js` | `window.TBL_THEME` | All visual constants — colors, typography, spacing, chart defaults |
 | `chart-core.js` | `window.TBL_CORE` | HTML/CSS injection, dep loading, resize debounce, shared D3 helpers |
 | `chart.js` | `window.TBL_CHART` | Unified renderer — bar, line, combo; calls TBL_CORE |
+| `chart-runner.js` | `window.TBL_RUNNER` | Config-driven runner — reads config.yaml + data.csv, calls TBL_CHART |
+| `embed.js` | — | Universal embed loader; reads `data-chart` attr to load any chart by ID |
+| `chart-runner-guide.md` | — | Author documentation for config.yaml options |
 | `tbl-logo-blue.svg` | — | Budget Lab logo, navy text on transparent background (primary) |
 | `tbl-logo-white.svg` | — | Alternate logo variant with white text — use on dark backgrounds |
 
@@ -357,20 +371,36 @@ Multiple charts on the same page are fully isolated.
 
 ## Adding a new chart
 
+**Standard path (config-driven — no JavaScript required):**
+
 1. Create `chartN/` directory
-2. Write `chartN/chart.js` — calls `TBL_CHART.run(dataSource, makeChartFn, palette?)`. The `makeChartFn` receives `tools` and returns `fetchAndRender`.
-3. Write `chartN/chart.html` — thin preview shell:
+2. Add `chartN/data.csv` — tidy CSV from R's `write_csv()`; first row is column headers
+3. Add `chartN/config.yaml` — see `shared/chart-runner-guide.md` for all options
+4. Add `chartN/export_data.R` — R script that generates `data.csv` from the source file
+5. Add `chartN/chart.html` for local preview:
    ```html
    <script src="https://d3js.org/d3.v7.min.js"></script>
-   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
    <script src="../shared/theme-v1.js"></script>
    ...
-   <div data-tbl-chart data-logo="../shared/tbl-logo-blue.svg"></div>
+   <div data-tbl-chart
+        data-chart-base="./"
+        data-no-xlsx=""
+        data-logo="../shared/tbl-logo-blue.svg"></div>
    <script src="../shared/chart-core.js"></script>
    <script src="../shared/chart.js"></script>
-   <script src="chart.js"></script>
+   <script src="../shared/chart-runner.js"></script>
    ```
-4. Write `chartN/embed.js` — loads theme → core → chart → chartN from `SITE`. Set `data-logo` to `SITE + 'shared/tbl-logo-blue.svg'`.
-5. Set `data-logo` to an absolute URL when the logo and host page are on different servers.
+6. Embed on a host page with the universal loader — no per-chart embed.js needed:
+   ```html
+   <script data-chart="chartN"
+           src="https://sylvakroeber.github.io/dataviztestspace/shared/embed.js">
+   </script>
+   ```
 
-Charts that don't use Excel data can pass `{ xlsx: false }` to `ensureDeps()` by calling `TBL_CORE.initChart()` directly with a custom factory, or by pre-loading D3 and skipping SheetJS entirely.
+**Custom-code path (escape hatch — for complex transforms or interactive widgets):**
+
+1–4. Same as above, but instead of `config.yaml` write `chartN/chart.js`:
+   - Calls `TBL_CHART.run(dataSource, makeChartFn, palette?)`
+   - `makeChartFn(tools)` returns `fetchAndRender()` which fetches data and calls `tools.drawChart(data)`
+5. `chart.html` loads `chart.js` instead of `chart-runner.js`
+6. Embed: use the per-chart `embed.js` pattern (copy from `tariff-tracker-f1/embed.js`)
