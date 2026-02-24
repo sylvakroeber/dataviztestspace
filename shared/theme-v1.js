@@ -31,12 +31,10 @@ window.TBL_THEME = {
       // ForestGreen(4)+teal(6) 42° apart — B-channel distinguishes under deuteranopia.
       categorical: ['#286dc0', '#5e9e00', '#7040c8', '#c86020', '#00A846', '#c04880', '#1890a0'],
       //             Blue H=212  Lime H=84  Violet H=261  Orange H=22  FrstGrn H=145  Rose H=332  Teal H=187
-      // Graduated shades within the blue family — related/similar series
-      blues:          ['#0d4b8e', '#286dc0', '#5489d4'],
-      'blues-extended': ['#0d4b8e', '#1e63b3', '#286dc0', '#3d91d3', '#5489d4', '#6898d5'],
 
-      // Monochromatic 5-shade scales for each non-blue categorical hue — darkest to lightest
+      // Monochromatic 5-shade scales — darkest to lightest
       // Base color (position 2) matches the corresponding categorical slot
+      tblBlues: ['#101f5b', '#1b3499', '#286dc0', '#63aaff', '#d9eaff'],
       lime:   ['#243600', '#3d5e00', '#5e9e00', '#93c843', '#b4dc78'],
       violet: ['#2a1060', '#4a2498', '#7040c8', '#9068d8', '#b89ee8'],
       green:  ['#00401b', '#00702f', '#00a846', '#3ca869', '#73be92'],
