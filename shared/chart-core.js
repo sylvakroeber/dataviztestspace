@@ -70,8 +70,8 @@
     const cursorColor      = TC.cursor           || '#999';
     const palettes         = TC.palettes         || {};
 
-    // Resolve palette: explicit arg → named palette → blues → hardcoded defaults
-    const resolvedPalette = palettes[palette] || palettes.blues || ['#286dc0', '#63aaff'];
+    // Resolve palette: explicit arg → named palette → categorical → hardcoded defaults
+    const resolvedPalette = palettes[palette] || palettes.categorical || ['#286dc0', '#bc8c00'];
 
     const titleSize    = TY.titleSize      || '18px';
     const titleWeight  = TY.titleWeight    || 600;

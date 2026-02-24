@@ -50,5 +50,4 @@ TBL_LINE.run(
     };
   },
 
-  'blues'                                         // palette — last, optional
 );

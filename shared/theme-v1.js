@@ -25,10 +25,22 @@ window.TBL_THEME = {
 
     // Named palettes — charts select by name; multiple palettes can be used simultaneously
     palettes: {
-      // Graduated shades within the blue family — related/similar series
-      blues:       ['#286dc0', '#63aaff', '#d9eaff'],
       // Maximally distinct colors — unrelated series that must be told apart at a glance
-      categorical: ['#286dc0', '#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1', '#ff9da7']
+      // Hue gaps: 166° | 141° | 137° | 152° | 149° | 165° — min gap 137°
+      // All ≥ 3:1 on white. CVD note: orange(6)+green(3) moderate deuteranopia risk; add markers if paired.
+      categorical: ['#286dc0', '#bc8c00', '#7040c8', '#3a9840', '#c04880', '#1890a0', '#c86020'],
+      // Graduated shades within the blue family — related/similar series
+      blues:          ['#0d4b8e', '#286dc0', '#5489d4'],
+      'blues-extended': ['#0d4b8e', '#1e63b3', '#286dc0', '#3d91d3', '#5489d4', '#6898d5'],
+
+      // Monochromatic 5-shade scales for each non-blue categorical hue — darkest to lightest
+      // Base color (position 2) matches the corresponding categorical slot
+      amber:  ['#423100', '#715400', '#bc8c00', '#d8a200', '#f5bc00'],
+      violet: ['#2a1060', '#4a2498', '#7040c8', '#9068d8', '#b89ee8'],
+      green:  ['#173d1a', '#26622c', '#3a9840', '#6ab870', '#9dd4a4'],
+      rose:   ['#481528', '#7a2848', '#c04880', '#d888b0', '#ecc0d4'],
+      teal:   ['#083238', '#0e5660', '#1890a0', '#74bcc6', '#badee3'],
+      orange: ['#50260d', '#823e15', '#c86020', '#d3804d', '#e8a880']
     }
   },
 
