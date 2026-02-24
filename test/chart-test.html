@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TBL Chart Engine — Test Suite</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f4f6f8; margin: 0; padding: 24px; }
+    h1   { font-size: 20px; margin-bottom: 4px; color: #1a1a2e; }
+    .variant-label {
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; color: #666; margin: 32px 0 8px;
+    }
+    .chart-wrap { max-width: 860px; margin-bottom: 32px; }
+  </style>
+</head>
+<body>
+
+<h1>TBL Chart Engine — Test Suite</h1>
+<p style="color:#666;font-size:13px;margin-top:0">
+  Verifies TBL_CHART renderer across all supported series types and combinations.
+</p>
+
+<!-- ── Variant 1: Simple bar ──────────────────────────────────────────────── -->
+<div class="variant-label">1 — Simple Bar</div>
+<div class="chart-wrap">
+  <div data-tbl-chart data-logo="../shared/TBL_ID_Graph_BrightBlue_KO.svg"></div>
+</div>
+
+<!-- ── Variant 2: Grouped bar ─────────────────────────────────────────────── -->
+<div class="variant-label">2 — Grouped Bar (two series, legend toggle)</div>
+<div class="chart-wrap">
+  <div data-tbl-chart data-logo="../shared/TBL_ID_Graph_BrightBlue_KO.svg"></div>
+</div>
+
+<!-- ── Variant 3: Stacked bar ─────────────────────────────────────────────── -->
+<div class="variant-label">3 — Stacked Bar (three series)</div>
+<div class="chart-wrap">
+  <div data-tbl-chart data-logo="../shared/TBL_ID_Graph_BrightBlue_KO.svg"></div>
+</div>
+
+<!-- ── Variant 4: Line chart ──────────────────────────────────────────────── -->
+<div class="variant-label">4 — Line Chart (two series, time scale, cursor bisector)</div>
+<div class="chart-wrap">
+  <div data-tbl-chart data-logo="../shared/TBL_ID_Graph_BrightBlue_KO.svg"></div>
+</div>
+
+<!-- ── Variant 5: Combo (stacked bars + line on right Y axis) ─────────────── -->
+<div class="variant-label">5 — Combo: Stacked Bars + Line on Right Y Axis</div>
+<div class="chart-wrap">
+  <div data-tbl-chart data-logo="../shared/TBL_ID_Graph_BrightBlue_KO.svg"></div>
+</div>
+
+<!-- ── Variant 6: Horizontal simple bar ──────────────────────────────────── -->
+<div class="variant-label">6 — Horizontal Bar (simple)</div>
+<div class="chart-wrap">
+  <div data-tbl-chart data-logo="../shared/TBL_ID_Graph_BrightBlue_KO.svg"></div>
+</div>
+
+<!-- ── Variant 7: Horizontal grouped bar ─────────────────────────────────── -->
+<div class="variant-label">7 — Horizontal Bar (grouped)</div>
+<div class="chart-wrap">
+  <div data-tbl-chart data-logo="../shared/TBL_ID_Graph_BrightBlue_KO.svg"></div>
+</div>
+
+<!-- Scripts ──────────────────────────────────────────────────────────────── -->
+<script src="../shared/theme-v1.js"></script>
+<script src="../shared/chart-core.js"></script>
+<script src="../shared/chart.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ── Shared sample data ────────────────────────────────────────────────────
+  var CATS3    = ['Q1 2024', 'Q2 2024', 'Q3 2024'];
+  var CATS5    = ['North', 'South', 'East', 'West', 'Central'];
+
+  // Variant 1 — Simple bar
+  var v1Data = {
+    title:      'Simple Bar Chart',
+    unit:       'Units sold (thousands)',
+    footnote:   'Hypothetical test data.',
+    credit:     'Source: Test suite',
+    categories: CATS3,
+    series: [
+      { type: 'bar', name: 'Product A', data: [42, 67, 55] },
+    ],
+    tooltipFormatter: function (name, val) { return val.toLocaleString() + 'k'; },
+    legend: false,
+  };
+
+  // Variant 2 — Grouped bar
+  var v2Data = {
+    title:      'Grouped Bar Chart',
+    unit:       'Revenue ($M)',
+    categories: CATS5,
+    series: [
+      { type: 'bar', name: 'Domestic', data: [120, 95, 140, 80, 110] },
+      { type: 'bar', name: 'International', data: [55, 70, 60, 90, 45] },
+    ],
+    tooltipFormatter: function (name, val) { return '$' + val + 'M'; },
+  };
+
+  // Variant 3 — Stacked bar
+  var v3Data = {
+    title:      'Stacked Bar Chart',
+    unit:       'Cost breakdown ($B)',
+    categories: CATS3,
+    series: [
+      { type: 'bar', name: 'Labor',     data: [30, 35, 28], stack: true },
+      { type: 'bar', name: 'Materials', data: [20, 25, 22], stack: true },
+      { type: 'bar', name: 'Overhead',  data: [10, 12,  9], stack: true },
+    ],
+    tooltipFormatter: function (name, val) { return '$' + val + 'B'; },
+  };
+
+  // Variant 4 — Two line series (time scale)
+  var v4Data = {
+    title: 'Line Chart — Two Series',
+    unit:  'Index (base 100)',
+    series: [
+      {
+        type: 'line', name: 'Series A',
+        data: [
+          { date: '2023-01', value: 100 }, { date: '2023-02', value: 104 },
+          { date: '2023-03', value: 102 }, { date: '2023-04', value: 108 },
+          { date: '2023-05', value: 113 }, { date: '2023-06', value: 110 },
+          { date: '2023-07', value: 115 }, { date: '2023-08', value: 119 },
+          { date: '2023-09', value: 117 }, { date: '2023-10', value: 122 },
+          { date: '2023-11', value: 126 }, { date: '2023-12', value: 130 },
+        ],
+      },
+      {
+        type: 'line', name: 'Series B',
+        data: [
+          { date: '2023-01', value: 100 }, { date: '2023-02', value: 99  },
+          { date: '2023-03', value: 101 }, { date: '2023-04', value: 98  },
+          { date: '2023-05', value: 103 }, { date: '2023-06', value: 107 },
+          { date: '2023-07', value: 105 }, { date: '2023-08', value: 110 },
+          { date: '2023-09', value: 112 }, { date: '2023-10', value: 109 },
+          { date: '2023-11', value: 114 }, { date: '2023-12', value: 118 },
+        ],
+      },
+    ],
+    avgValue: 109,
+    avgLabel: 'Period avg',
+    avgLabelDate: '2023-07',
+    verticalAnnotations: [{ date: '2023-06-15', color: 'bright' }],
+    tooltipFormatter: function (name, val) { return val.toFixed(1); },
+  };
+
+  // Variant 5 — Combo: stacked bars + categorical line on right axis
+  // Line series uses data: number[] so it plots at band centers (categorical X)
+  var v5Data = {
+    title:      'Combo: Stacked Bars + Line (Right Axis)',
+    unit:       'Volume (units)',
+    categories: CATS5,
+    yAxis: {
+      left:  { label: 'Volume (units)' },
+      right: { label: 'Margin (%)' },
+    },
+    series: [
+      { type: 'bar',  name: 'Segment A', data: [200, 150, 300, 180, 240], stack: true },
+      { type: 'bar',  name: 'Segment B', data: [100, 120, 140, 90, 160],  stack: true },
+      { type: 'line', name: 'Margin %',  data: [18, 22, 20, 25, 27], yAxis: 'right', color: '#c86020' },
+    ],
+    tooltipFormatter: function (name, val) { return name === 'Margin %' ? val + '%' : val.toLocaleString(); },
+  };
+
+  // Variant 6 — Horizontal simple bar
+  var v6Data = {
+    title:      'Horizontal Bar (Simple)',
+    unit:       'Score',
+    categories: CATS5,
+    horizontal: true,
+    series: [
+      { type: 'bar', name: 'Score', data: [82, 74, 91, 68, 79] },
+    ],
+    legend: false,
+    tooltipFormatter: function (name, val) { return val; },
+  };
+
+  // Variant 7 — Horizontal grouped bar
+  var v7Data = {
+    title:      'Horizontal Bar (Grouped)',
+    unit:       'Count',
+    categories: CATS3,
+    horizontal: true,
+    series: [
+      { type: 'bar', name: 'Group X', data: [55, 40, 70] },
+      { type: 'bar', name: 'Group Y', data: [30, 60, 45] },
+    ],
+    tooltipFormatter: function (name, val) { return val.toLocaleString(); },
+  };
+
+  // ── Wire all charts ───────────────────────────────────────────────────────
+  // Each [data-tbl-chart] element gets its own initChart call with its own data.
+  var allData = [v1Data, v2Data, v3Data, v4Data, v5Data, v6Data, v7Data];
+
+  // TBL_CHART.run() scans all [data-tbl-chart] elements and calls makeChartFn
+  // once per element. But each variant needs different data, so we use initChart
+  // per element instead.
+
+  function makeFactory(variantData) {
+    return function chartFactory(tools) {
+      return function fetchAndRender() {
+        tools.drawChart(variantData);
+      };
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var placeholders = document.querySelectorAll('[data-tbl-chart]');
+    placeholders.forEach(function (el, i) {
+      if (allData[i]) {
+        TBL_CHART.initChart(el, null, makeFactory(allData[i]), 'categorical');
+      }
+    });
+  });
+
+})();
+</script>
+</body>
+</html>

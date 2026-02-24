@@ -28,10 +28,11 @@
     return _loading[src];
   }
 
-  function ensureDeps() {
-    const needed = [];
-    if (!window.d3)   needed.push(loadScript(CDN_D3));
-    if (!window.XLSX) needed.push(loadScript(CDN_XLSX));
+  function ensureDeps(opts) {
+    var o = opts || {};
+    var needed = [];
+    if (!window.d3)                       needed.push(loadScript(CDN_D3));
+    if (o.xlsx !== false && !window.XLSX) needed.push(loadScript(CDN_XLSX));
     return Promise.all(needed);
   }
 
@@ -48,7 +49,7 @@
   function initChart(placeholder, drawChartFactory, makeChartFn, dataSource, palette) {
     const uid         = 'tbl-' + Math.random().toString(36).slice(2, 8);
     const DATA_SOURCE = dataSource || 'tariff_impacts_results_20260216.xlsx';
-    const LOGO_SRC    = placeholder.dataset.logo || 'TBL_ID_Graph_BrightBlue_KO.svg';
+    const LOGO_SRC    = placeholder.dataset.logo || 'shared/TBL_ID_Graph_BrightBlue_KO.svg';
 
     // ── Theme values (window.TBL_THEME if loaded, else hardcoded fallbacks) ──
     const T   = window.TBL_THEME || {};
@@ -103,6 +104,11 @@
     const tooltipOffsetY     = TCH.tooltipOffsetY      || 36;
     const legendHiddenOpacity     = TCH.legendHiddenOpacity     || 0.15;
     const legendHiddenItemOpacity = TCH.legendHiddenItemOpacity || 0.4;
+
+    const barPadding      = TCH.barPadding      != null ? TCH.barPadding      : 0.25;
+    const groupPadding    = TCH.groupPadding    != null ? TCH.groupPadding    : 0.10;
+    const barAspectRatio  = TCH.barAspectRatio  != null ? TCH.barAspectRatio  : 0.50;
+    const barCornerRadius = TCH.barCornerRadius != null ? TCH.barCornerRadius : 3;
 
     const defaultCredit   = TD.creditText   != null ? TD.creditText   : '';
     const defaultFootnote = TD.footnoteText || '';
@@ -230,6 +236,7 @@
         uid, el, ttEl,
         bg, titleColor, secondary, axisColor, axisStroke, gridColor,
         tooltipBg, annotationBright, annotationDim, cursorColor,
+        fontFamily,
         palette: resolvedPalette,
         titleSize, titleWeight, bodySize, axisSize, annotSize, smallSize,
         titleSizePx, titleMinSizePx,
@@ -238,6 +245,7 @@
         yDomainPadding, yTickCount, lineCurve,
         tooltipOffsetX, tooltipOffsetY,
         legendHiddenOpacity, legendHiddenItemOpacity,
+        barPadding, groupPadding, barAspectRatio, barCornerRadius,
         showError, clearError,
         DATA_SOURCE, placeholder,
       };
@@ -283,6 +291,150 @@
     }
   }
 
-  window.TBL_CORE = { initChart, run, excelDateToYYYYMM, ensureDeps };
+  // ── Shared D3 helper: fitTitle ────────────────────────────────────────────
+  // Reads ctx.titleSizePx / ctx.titleMinSizePx; adjusts --tbl-title-size CSS var.
+  function fitTitle(ctx, totalWidth) {
+    const container = ctx.el('container');
+    const titleEl   = ctx.el('title');
+    titleEl.style.fontSize   = ctx.titleSizePx + 'px';
+    titleEl.style.whiteSpace = 'nowrap';
+    const titleNeeded = titleEl.scrollWidth;
+    titleEl.style.whiteSpace = '';
+    titleEl.style.fontSize   = '';
+    const titleFontSize = titleNeeded <= totalWidth
+      ? ctx.titleSizePx + 'px'
+      : Math.max(ctx.titleMinSizePx, Math.round(ctx.titleSizePx * totalWidth / titleNeeded)) + 'px';
+    container.style.setProperty('--tbl-title-size', titleFontSize);
+  }
+
+  // ── Shared D3 helper: drawGridlines ──────────────────────────────────────
+  // opts: { axis: 'y'|'x', tickCount?, tickValues? }
+  function drawGridlines(g, scale, size, opts) {
+    const o    = opts || {};
+    const axis = o.axis === 'x' ? d3.axisBottom(scale) : d3.axisLeft(scale);
+    if (o.tickValues) axis.tickValues(o.tickValues);
+    else if (o.tickCount) axis.ticks(o.tickCount);
+    axis.tickSize(o.axis === 'x' ? size : -size).tickFormat('');
+    g.append('g').attr('class', 'gridline').call(axis).select('.domain').remove();
+  }
+
+  // ── Shared D3 helper: buildLinearYAxis ───────────────────────────────────
+  // opts: { tickCount?, tickFormat?, label?, marginLeft? }
+  function buildLinearYAxis(g, yScale, ctx, opts) {
+    const o    = opts || {};
+    const axis = d3.axisLeft(yScale).ticks(o.tickCount != null ? o.tickCount : ctx.yTickCount);
+    if (o.tickFormat) axis.tickFormat(o.tickFormat);
+    const axisG = g.append('g').attr('class', 'axis').call(axis);
+    axisG.select('.domain').remove();
+    if (o.label) {
+      const ml = o.marginLeft != null ? o.marginLeft : ctx.margin.left;
+      const h  = Math.abs(yScale.range()[0] - yScale.range()[1]);
+      axisG.append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('y', -ml + 12).attr('x', -h / 2)
+        .attr('text-anchor', 'middle')
+        .attr('font-size', ctx.axisSize).attr('fill', ctx.secondary)
+        .text(o.label);
+    }
+    return axisG;
+  }
+
+  // ── Shared D3 helper: buildTimeXAxis ─────────────────────────────────────
+  // opts: { tickFormat? }
+  function buildTimeXAxis(g, xScale, ctx, height, opts) {
+    const o = opts || {};
+    const [xMin, xMax] = xScale.domain();
+    const monthSpan    = d3.timeMonth.count(xMin, xMax);
+    const width        = Math.abs(xScale.range()[1] - xScale.range()[0]);
+    const maxTicks     = Math.max(2, Math.floor(width / ctx.axisTickMinSpacing));
+    const rawEvery     = monthSpan / maxTicks;
+    const tickEvery    = ctx.axisTickIntervals.find(n => rawEvery <= n)
+                         || ctx.axisTickIntervals[ctx.axisTickIntervals.length - 1];
+    const fmt          = o.tickFormat || d3.timeFormat('%b %Y');
+    g.append('g').attr('class', 'axis')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(xScale).ticks(d3.timeMonth.every(tickEvery)).tickFormat(fmt))
+      .selectAll('text').attr('dy', '1.2em').style('text-anchor', 'middle');
+  }
+
+  // ── Shared D3 helper: buildBandXAxis ─────────────────────────────────────
+  // opts: { tickFormat?, rotate?: boolean }
+  function buildBandXAxis(g, xScale, height, ctx, opts) {
+    const o    = opts || {};
+    const axis = d3.axisBottom(xScale);
+    if (o.tickFormat) axis.tickFormat(o.tickFormat);
+    const axisG = g.append('g').attr('class', 'axis')
+      .attr('transform', `translate(0,${height})`)
+      .call(axis);
+    axisG.select('.domain').remove();
+    axisG.selectAll('.tick line').remove();
+    if (o.rotate) {
+      axisG.selectAll('text')
+        .attr('text-anchor', 'end')
+        .attr('dx', '-0.6em').attr('dy', '0.15em')
+        .attr('transform', 'rotate(-35)');
+    } else {
+      axisG.selectAll('text').attr('dy', '1.2em').style('text-anchor', 'middle');
+    }
+    return axisG;
+  }
+
+  // ── Shared D3 helper: buildBandScales ────────────────────────────────────
+  // opts: { grouped?: boolean, horizontal?: boolean }
+  // Returns { xOuter, xInner? }
+  function buildBandScales(categories, seriesNames, size, ctx, opts) {
+    const o = opts || {};
+    const xOuter = d3.scaleBand()
+      .domain(categories)
+      .range([0, size])
+      .padding(ctx.barPadding);
+    if (!o.grouped || seriesNames.length <= 1) return { xOuter };
+    const xInner = d3.scaleBand()
+      .domain(seriesNames)
+      .range([0, xOuter.bandwidth()])
+      .padding(ctx.groupPadding);
+    return { xOuter, xInner };
+  }
+
+  // ── Shared D3 helper: positionTooltip ────────────────────────────────────
+  function positionTooltip(ttEl, event, ctx) {
+    ttEl.style.display = 'block';
+    const ttWidth = ttEl.offsetWidth;
+    const leftPos = event.clientX + ctx.tooltipOffsetX + ttWidth > window.innerWidth
+      ? event.clientX - ctx.tooltipOffsetX - ttWidth
+      : event.clientX + ctx.tooltipOffsetX;
+    ttEl.style.left = leftPos + 'px';
+    ttEl.style.top  = (event.clientY - ctx.tooltipOffsetY) + 'px';
+  }
+
+  // ── Shared D3 helper: buildLegend ─────────────────────────────────────────
+  // series: [{ name, color }], onToggle(name, isVisible)
+  function buildLegend(legendEl, series, ctx, onToggle) {
+    legendEl.innerHTML = '';
+    series.forEach(s => {
+      const item   = document.createElement('div');
+      item.className = 'tbl-legend-item';
+      const swatch = document.createElement('div');
+      swatch.className = 'tbl-legend-swatch';
+      swatch.style.background = s.color;
+      const label  = document.createElement('span');
+      label.textContent = s.name;
+      item.appendChild(swatch);
+      item.appendChild(label);
+      let visible = true;
+      item.addEventListener('click', () => {
+        visible = !visible;
+        item.style.opacity = visible ? 1 : ctx.legendHiddenItemOpacity;
+        if (onToggle) onToggle(s.name, visible);
+      });
+      legendEl.appendChild(item);
+    });
+  }
+
+  window.TBL_CORE = {
+    initChart, run, excelDateToYYYYMM, ensureDeps,
+    fitTitle, drawGridlines, buildLinearYAxis, buildTimeXAxis,
+    buildBandXAxis, buildBandScales, positionTooltip, buildLegend,
+  };
 
 })();

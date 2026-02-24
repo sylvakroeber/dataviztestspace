@@ -86,7 +86,13 @@ window.TBL_THEME = {
     tooltipOffsetX:          16,     // px right of cursor (flips left near viewport edge)
     tooltipOffsetY:          36,     // px above cursor
     legendHiddenOpacity:     0.15,   // line opacity when series toggled off
-    legendHiddenItemOpacity: 0.4     // legend label/swatch opacity when toggled off
+    legendHiddenItemOpacity: 0.4,    // legend label/swatch opacity when toggled off
+
+    barPadding:       0.25,   // scaleBand outer/inner padding (0 = bars touch, 1 = no bars)
+    groupPadding:     0.10,   // inner-band padding for grouped bars
+    barAspectRatio:   0.50,   // height/width ratio for bar/combo charts
+    barCornerRadius:  3,      // px, rounded top corners on vertical bars
+    barLabelOffset:   4       // px gap for optional value-on-bar labels (future)
   }
 
 };
