@@ -49,7 +49,7 @@
   function initChart(placeholder, drawChartFactory, makeChartFn, dataSource, palette) {
     const uid         = 'tbl-' + Math.random().toString(36).slice(2, 8);
     const DATA_SOURCE = dataSource || 'tariff_impacts_results_20260216.xlsx';
-    const LOGO_SRC    = placeholder.dataset.logo || 'shared/TBL_ID_Graph_BrightBlue_KO.svg';
+    const LOGO_SRC    = placeholder.dataset.logo || 'shared/tbl-logo-blue.svg';
 
     // ── Theme values (window.TBL_THEME if loaded, else hardcoded fallbacks) ──
     const T   = window.TBL_THEME || {};

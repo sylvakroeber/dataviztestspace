@@ -29,7 +29,7 @@ shared/chart.js      → window.TBL_CHART   unified renderer (bar, line, combo)
 | `theme-v1.js` | `window.TBL_THEME` | All visual constants — colors, typography, spacing, chart defaults |
 | `chart-core.js` | `window.TBL_CORE` | HTML/CSS injection, dep loading, resize debounce, shared D3 helpers |
 | `chart.js` | `window.TBL_CHART` | Unified renderer — bar, line, combo; calls TBL_CORE |
-| `TBL_ID_Graph_BrightBlue_KO.svg` | — | Budget Lab logo, navy text on transparent background (primary) |
+| `tbl-logo-blue.svg` | — | Budget Lab logo, navy text on transparent background (primary) |
 | `TBL_ID_Graph_BrightBlue_K.svg` | — | Alternate logo variant with black text (not currently in use) |
 
 ---
@@ -365,12 +365,12 @@ Multiple charts on the same page are fully isolated.
    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
    <script src="../shared/theme-v1.js"></script>
    ...
-   <div data-tbl-chart data-logo="../shared/TBL_ID_Graph_BrightBlue_KO.svg"></div>
+   <div data-tbl-chart data-logo="../shared/tbl-logo-blue.svg"></div>
    <script src="../shared/chart-core.js"></script>
    <script src="../shared/chart.js"></script>
    <script src="chart.js"></script>
    ```
-4. Write `chartN/embed.js` — loads theme → core → chart → chartN from `SITE`. Set `data-logo` to `SITE + 'shared/TBL_ID_Graph_BrightBlue_KO.svg'`.
+4. Write `chartN/embed.js` — loads theme → core → chart → chartN from `SITE`. Set `data-logo` to `SITE + 'shared/tbl-logo-blue.svg'`.
 5. Set `data-logo` to an absolute URL when the logo and host page are on different servers.
 
 Charts that don't use Excel data can pass `{ xlsx: false }` to `ensureDeps()` by calling `TBL_CORE.initChart()` directly with a custom factory, or by pre-loading D3 and skipping SheetJS entirely.

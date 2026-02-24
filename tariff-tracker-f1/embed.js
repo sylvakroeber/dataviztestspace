@@ -16,7 +16,7 @@
   var me = document.currentScript;
   var div = document.createElement('div');
   div.setAttribute('data-tbl-chart', '');
-  div.setAttribute('data-logo', SITE + 'shared/TBL_ID_Graph_BrightBlue_KO.svg');
+  div.setAttribute('data-logo', SITE + 'shared/tbl-logo-blue.svg');
   me.parentNode.insertBefore(div, me);
 
   function showLoadError(filename) {

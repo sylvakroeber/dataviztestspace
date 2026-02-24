@@ -32,7 +32,7 @@ Shared infrastructure (repo-wide, lives in `../shared/`):
 | `../shared/theme-v1.js` | Budget Lab house style — sets `window.TBL_THEME`; versioned filename |
 | `../shared/chart-core.js` | Universal infrastructure — sets `window.TBL_CORE`; shared across all chart types |
 | `../shared/chart.js` | Unified renderer — sets `window.TBL_CHART`; supports bar, line, and combo series |
-| `../shared/TBL_ID_Graph_BrightBlue_KO.svg` | Budget Lab logo (blue graph, navy text on transparent background) |
+| `../shared/tbl-logo-blue.svg` | Budget Lab logo (blue graph, navy text on transparent background) |
 | `../shared/TBL_ID_Graph_BrightBlue_K.svg` | Alternate logo variant with black text (not currently used) |
 
 ---
@@ -154,7 +154,7 @@ A minimal standalone preview page — no logic of its own. Pre-loads D3, SheetJS
   <script src="../shared/theme-v1.js"></script>
 </head>
 <body>
-  <div data-tbl-chart data-logo="../shared/TBL_ID_Graph_BrightBlue_KO.svg"></div>
+  <div data-tbl-chart data-logo="../shared/tbl-logo-blue.svg"></div>
   <script src="../shared/chart-core.js"></script>
   <script src="../shared/chart.js"></script>
   <script src="chart.js"></script>
@@ -214,7 +214,7 @@ Once set, `embed.js` never needs to change again — future chart updates are de
 
 ```html
 <div data-tbl-chart
-     data-logo="https://YOUR-DOMAIN/TBL_ID_Graph_BrightBlue_KO.svg">
+     data-logo="https://YOUR-DOMAIN/tbl-logo-blue.svg">
 </div>
 <script src="https://YOUR-DOMAIN/embed.js"></script>
 ```
@@ -230,7 +230,7 @@ Multiple charts per page are supported — each `[data-tbl-chart]` placeholder g
 | Attribute | Required | Description |
 |-----------|----------|-------------|
 | `data-tbl-chart` | Yes | Marks the element as a chart placeholder |
-| `data-logo` | No | URL to the SVG logo; defaults to `shared/TBL_ID_Graph_BrightBlue_KO.svg` relative to the repo root |
+| `data-logo` | No | URL to the SVG logo; defaults to `shared/tbl-logo-blue.svg` relative to the repo root |
 
 `data-src` and `data-palette` are no longer used — the data source and palette are declared in `chart.js`.
 
@@ -299,6 +299,6 @@ The main reason not to simply reference `chart.html` via a `<script>` tag is tha
 
 Both logo SVGs live in `../shared/` (repo-wide asset, not chart-specific).
 
-- `../shared/TBL_ID_Graph_BrightBlue_KO.svg`: white/KO variant — text fill changed from `#FFFFFF` to `#101f5b` (navy) to work on a white background without a colored backing rectangle.
+- `../shared/tbl-logo-blue.svg`: white/KO variant — text fill changed from `#FFFFFF` to `#101f5b` (navy) to work on a white background without a colored backing rectangle.
 - `viewBox` on both SVGs was tightened from `0 0 252 108` to `15 24 222 60` to remove excess whitespace around the artwork.
 - The `K` variant (`*K.svg`) has black text and is kept as an alternate but is not currently referenced.
