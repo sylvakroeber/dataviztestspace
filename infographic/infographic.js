@@ -6,7 +6,7 @@
     var Ty = T.typography || {};
     var S  = T.spacing || {};
     var blues = ((C.palettes || {}).blue)        || ['#101f5b', '#1b3499', '#286dc0', '#63aaff', '#d9eaff'];
-    var cat   = ((C.palettes || {}).categorical) || ['#286dc0','#e15759','#76b7b2','#59a14f','#edc948','#b07aa1','#ff9da7'];
+    var cat   = ((C.palettes || {}).categorical) || ['#286dc0','#5e9e00','#7040c8','#c86020','#00A846','#c04880','#1890a0'];
     return {
       fontFamily:     Ty.fontFamily     || "system-ui, -apple-system, sans-serif",
       titleSize:      Ty.titleSize      || '18px',
