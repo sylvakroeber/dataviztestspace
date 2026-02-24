@@ -30,11 +30,10 @@ names(raw)[1:4] <- c("date_serial", "customs_nominal_m", "customs_2025_m", "avg_
 # Drop rows where the date column is empty
 raw <- raw |> filter(!is.na(date_serial))
 
-# Convert Excel serial dates to Date objects.
-# Excel's epoch is 1899-12-30 (with the 1900 leap-year bug accounted for).
+# readxl already converts Excel date cells to POSIXct; cast to Date and convert values.
 raw <- raw |>
   mutate(
-    date              = as.Date(as.numeric(date_serial), origin = "1899-12-30"),
+    date               = as.Date(date_serial),
     # Convert millions -> billions (2 decimal places is sufficient precision)
     customs_nominal_bn = round(as.numeric(customs_nominal_m) / 1000, 2),
     customs_2025_bn    = round(as.numeric(customs_2025_m)    / 1000, 2),
