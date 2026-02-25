@@ -105,11 +105,13 @@
           .filter(function (d) { return d.date && !isNaN(d.value); });
 
         return {
-          type:  'line',
-          name:  s.name,
-          color: color,
-          yAxis: s.yAxis || undefined,
-          data:  data,
+          type:       'line',
+          name:       s.name,
+          color:      color,
+          yAxis:      s.yAxis      || undefined,
+          marker:     s.marker     != null ? s.marker     : undefined,
+          markerSize: s.markerSize != null ? s.markerSize : undefined,
+          data:       data,
         };
       }
 
@@ -162,14 +164,27 @@
       avgValue = config.avgValue;
     }
 
-    // Vertical annotations: accept strings or objects
+    // Vertical annotations: accept strings or objects; optional label field
     var vertAnnotations = (config.verticalAnnotations || []).map(function (a) {
-      return typeof a === 'string'
-        ? { date: a, color: 'dim' }
-        : { date: a.date, color: a.color || 'dim' };
+      if (typeof a === 'string') return { date: a, color: 'dim' };
+      var entry = { date: a.date, color: a.color || 'dim' };
+      if (a.label) { entry.label = String(a.label); entry.side = a.side || 'above'; }
+      return entry;
+    });
+
+    // Freeform annotations list
+    var annotations = (config.annotations || []).map(function (a) {
+      return {
+        text:  String(a.text || ''),
+        x:     a.x  != null ? String(a.x)  : undefined,
+        y:     a.y  != null ? +a.y          : undefined,
+        side:  a.side  || undefined,
+        color: a.color || undefined,
+      };
     });
 
     return {
+      figure:              config.figure   || '',
       title:               config.title    || 'Chart',
       unit:                config.unit     || '',
       footnote:            config.footnote || '',
@@ -183,7 +198,10 @@
       avgLabel:            config.avgLabel     || null,
       avgLabelDate:        config.avgLabelDate || null,
       verticalAnnotations: vertAnnotations,
+      annotations:         annotations,
       tooltipFormatter:    buildFormatter(config),
+      exportFilename:      config.exportFilename || null,
+      exportButton:        config.exportButton   != null ? config.exportButton : undefined,
     };
   }
 

@@ -1,8 +1,8 @@
 /**
  * TBL Theme v1 — Budget Lab house style
  * --------------------------------------
- * Sets window.TBL_THEME with all visual constants used by chart.js.
- * chart.js reads these values with fallbacks, so it works standalone
+ * Sets window.TBL_THEME with all visual constants used by chart-renderer.js.
+ * chart-renderer.js reads these values with fallbacks, so it works standalone
  * even if this file is not loaded.
  *
  * Versioning rule:

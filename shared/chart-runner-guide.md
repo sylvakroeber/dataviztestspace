@@ -32,6 +32,7 @@ series:
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
+| `figure` | string | `""` | Optional figure label shown above the title (e.g. `"Figure 1"`) |
 | `title` | string | `"Chart"` | Chart title displayed above the plot |
 | `unit` | string | `""` | Y-axis unit label shown below the title (e.g. `"Billions USD"`) |
 | `footnote` | string | `""` | Small text below the chart; overrides the theme default |
@@ -138,7 +139,55 @@ verticalAnnotations:
     color: dim             # 'dim' (gray) or 'bright' (orange)
   - date:  "2017-01-20"
     color: bright
+    label: "Policy enacted"   # optional — adds a text label at this line
+    side:  above              # 'above' (default) or 'below'
 ```
+
+When `label` is present the text is placed at the top (or bottom) of the vertical line using the collision-avoidance engine, so it will not overlap rendered series.
+
+---
+
+### Freeform annotations
+
+Point or line labels with automatic collision avoidance. Three modes:
+
+| Mode | Required fields | Behavior |
+|------|-----------------|----------|
+| **A** — x-anchored | `text`, `x` | Label floats on y (top/bottom); no leader line |
+| **B** — y-anchored | `text`, `y` | Label floats on x (left/right); no leader line |
+| **C** — x+y anchored | `text`, `x`, `y` | Label placed freely; thin leader line to anchor |
+
+```yaml
+annotations:
+  # Mode A — x-anchored: label floats on y, flips above↔below if blocked
+  - text:  "Policy enacted"
+    x:     "2023-06"          # YYYY-MM for time series; category name for bar charts
+    side:  above              # 'above' (default) or 'below'
+    color: dim                # 'dim' (gray), 'bright' (orange), or any hex color
+
+  # Mode B — y-anchored: label floats on x, flips left↔right if blocked
+  - text:  "Target: 115"
+    y:     115                # data-space value on the left Y axis
+    side:  right              # 'right' (default) or 'left'
+    color: bright
+
+  # Mode C — x+y anchored: label placed freely with a leader line
+  - text:  "Peak: $4.2B"
+    x:     "2023-08"
+    y:     42.5
+    side:  above              # preferred direction hint (above/below/left/right)
+    color: bright
+```
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `text` | string | yes | Label text |
+| `x` | string | one of `x`/`y` | `YYYY-MM` for time series; category name for categorical |
+| `y` | number | one of `x`/`y` | Data-space value on left Y axis |
+| `side` | string | no | Preferred placement direction. Defaults to `above`. |
+| `color` | string | no | `dim` (gray), `bright` (orange, default), or a hex color string |
+
+The placement engine collects obstacles from rendered line paths, markers, and bars, then finds the first clear position starting from the preferred side. If no clear position exists the label is placed at the least-overlapping candidate.
 
 ---
 
@@ -161,6 +210,22 @@ tooltipPrecision: 1           # decimal places; omit for auto
 | `18%` | `suffix: "%"`, precision `0` |
 | `1.3x` | `suffix: "x"`, precision `1` |
 | `104.2` (index) | no prefix/suffix, precision `1` |
+
+---
+
+### PNG export
+
+A "↓ PNG" button is automatically shown in the chart header after the chart renders. Use these fields to customise or suppress it.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `exportFilename` | string | slugified title | Base filename for the downloaded PNG (without `.png` extension) |
+| `exportButton` | boolean | `true` | Set `false` to hide the download button entirely |
+
+```yaml
+exportFilename: "tariff-tracker-jan-2025"  # → tariff-tracker-jan-2025.png
+exportButton:   true                        # set false to hide the button
+```
 
 ---
 
@@ -196,6 +261,6 @@ The `chart.html` for a custom-code chart loads the script stack plus `chart.js`:
 
 ```html
 <script src="../shared/chart-core.js"></script>
-<script src="../shared/chart.js"></script>
+<script src="../shared/chart-renderer.js"></script>
 <script src="chart.js"></script>   <!-- custom logic; no chart-runner.js -->
 ```

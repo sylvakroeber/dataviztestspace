@@ -5,7 +5,7 @@
 This is a config-driven D3 line chart. It uses no per-chart JavaScript — the chart is fully specified by `config.yaml` and `data.csv`. The shared runner (`../shared/chart-runner.js`) reads these files and calls the unified renderer automatically.
 
 - **`../shared/chart-core.js`** — universal infrastructure; sets `window.TBL_CORE`
-- **`../shared/chart.js`** — unified chart renderer (bar, line, combo); sets `window.TBL_CHART`
+- **`../shared/chart-renderer.js`** — unified chart renderer (bar, line, combo); sets `window.TBL_CHART`
 - **`../shared/chart-runner.js`** — config-driven runner; reads config.yaml + data.csv; sets `window.TBL_RUNNER`
 
 Two consumers:
@@ -33,7 +33,7 @@ Shared infrastructure (repo-wide, lives in `../shared/`):
 |------|---------|
 | `../shared/theme-v1.js` | Budget Lab house style — sets `window.TBL_THEME`; versioned filename |
 | `../shared/chart-core.js` | Universal infrastructure — sets `window.TBL_CORE`; shared across all chart types |
-| `../shared/chart.js` | Unified renderer — sets `window.TBL_CHART`; supports bar, line, and combo series |
+| `../shared/chart-renderer.js` | Unified renderer — sets `window.TBL_CHART`; supports bar, line, and combo series |
 | `../shared/chart-runner.js` | Config-driven runner — sets `window.TBL_RUNNER` |
 | `../shared/embed.js` | Universal embed loader — parameterised by `data-chart` attribute |
 | `../shared/tbl-logo-blue.svg` | Budget Lab logo (blue graph, navy text on transparent background) |
@@ -163,7 +163,7 @@ A minimal standalone preview page — no logic of its own. Pre-loads D3, SheetJS
        data-no-xlsx=""
        data-logo="../shared/tbl-logo-blue.svg"></div>
   <script src="../shared/chart-core.js"></script>
-  <script src="../shared/chart.js"></script>
+  <script src="../shared/chart-renderer.js"></script>
   <script src="../shared/chart-runner.js"></script>
 </body>
 ```
@@ -259,7 +259,7 @@ The main reason not to simply reference `chart.html` via a `<script>` tag is tha
 3. **`initChart(placeholder, drawChartFactory, makeChartFn, dataSource, palette)`** — chart factory called once per `[data-tbl-chart]` element. Reads `window.TBL_THEME`, generates UID, injects HTML and scoped CSS, then calls `ensureDeps()`. After deps load, calls `drawChartFactory(ctx)` → `drawChart`, then `makeChartFn(tools)` → `fetchAndRender`. Boots chart and wires 200ms resize debounce.
 4. **`run(drawChartFactory, makeChartFn, dataSource, palette)`** — queries all `[data-tbl-chart]`, calls `initChart` for each, with `DOMContentLoaded` guard.
 
-**`shared/chart.js`** (`window.TBL_CHART`):
+**`shared/chart-renderer.js`** (`window.TBL_CHART`):
 1. **`chartDrawFactory(ctx)`** — receives full `ctx` from core; returns instance-bound `drawChart(data)` supporting `type: 'line'` and `type: 'bar'` series in any combination.
 2. **`TBL_CHART.run(src, fn, pal)`** — calls `TBL_CORE.run(chartDrawFactory, fn, src, pal)`.
 

@@ -61,7 +61,7 @@
   // Load order: theme → core → chart engine → runner (runner auto-initialises)
   loadScript('shared/theme-v1.js', function () {
     loadScript('shared/chart-core.js', function () {
-      loadScript('shared/chart.js', function () {
+      loadScript('shared/chart-renderer.js', function () {
         loadScript('shared/chart-runner.js');
       });
     });

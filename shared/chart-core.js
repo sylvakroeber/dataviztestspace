@@ -118,9 +118,11 @@
       <div id="${uid}-container">
         <div id="${uid}-header">
           <div>
+            <div id="${uid}-figure"></div>
             <div id="${uid}-title">Loading\u2026</div>
             <div id="${uid}-unit"></div>
           </div>
+          <button id="${uid}-export">\u2193 PNG</button>
         </div>
         <div id="${uid}-legend"></div>
         <div id="${uid}-wrapper"></div>
@@ -176,8 +178,9 @@
         align-items: flex-start;
         margin-bottom: 8px;
       }
-      #${uid}-title { font-size: var(--tbl-title-size); font-weight: ${titleWeight}; color: ${titleColor}; }
-      #${uid}-unit  { font-size: ${bodySize}; color: ${secondary}; margin-top: 2px; }
+      #${uid}-figure { font-size: var(--tbl-title-size); font-weight: 300; color: ${titleColor}; margin-bottom: 0; display: none; }
+      #${uid}-title  { font-size: var(--tbl-title-size); font-weight: ${titleWeight}; color: ${titleColor}; }
+      #${uid}-unit   { font-size: ${bodySize}; color: ${secondary}; margin-top: 2px; }
       #${uid}-wrapper svg { display: block; width: 100%; }
       ${c} .axis text { font-size: ${axisSize}; fill: ${axisColor}; }
       ${c} .axis path, ${c} .axis line { stroke: ${axisStroke}; stroke-width: 1px; fill: none; }
@@ -226,7 +229,15 @@
         background: #fff3f3; border: 1px solid #f5c6cb;
         border-radius: 6px; padding: 10px 14px;
         color: #721c24; font-size: ${bodySize}; margin-top: 12px;
-      }`;
+      }
+      #${uid}-export {
+        display: none;
+        font-size: ${smallSize}; color: ${secondary};
+        border: 1px solid ${axisStroke}; border-radius: 4px;
+        padding: 3px 8px; background: none; cursor: pointer;
+        font-family: inherit; align-self: flex-start; white-space: nowrap;
+      }
+      #${uid}-export:hover { border-color: ${axisColor}; }`;
     document.head.appendChild(styleEl);
 
     // ── Load D3 (+ SheetJS unless data-no-xlsx is set), then wire up the chart ─
@@ -409,16 +420,47 @@
   }
 
   // ── Shared D3 helper: buildLegend ─────────────────────────────────────────
-  // series: [{ name, color }], onToggle(name, isVisible)
+  // series: [{ name, color, markerShape? }], onToggle(name, isVisible)
+  // markerShape: 'circle'|'triangle'|'square'|'diamond'|'star'|'cross'|'wye'
+  //   Lines default to 'circle'; bars default to 'square'. Caller resolves this.
   function buildLegend(legendEl, series, ctx, onToggle) {
+    const symbolKeys = {
+      circle: 'symbolCircle', triangle: 'symbolTriangle', square: 'symbolSquare',
+      diamond: 'symbolDiamond', star: 'symbolStar', cross: 'symbolCross', wye: 'symbolWye',
+    };
+    const swatchPx   = 14;  // SVG width/height in px
+    const symbolArea = 72;  // d3.symbol area in sq px (≈ 4.8px radius for circle)
+
     legendEl.innerHTML = '';
     series.forEach(s => {
-      const item   = document.createElement('div');
+      const item = document.createElement('div');
       item.className = 'tbl-legend-item';
-      const swatch = document.createElement('div');
-      swatch.className = 'tbl-legend-swatch';
-      swatch.style.background = s.color;
-      const label  = document.createElement('span');
+
+      // Render swatch as a small SVG symbol matching the series shape
+      const shape      = s.markerShape || 'circle';
+      const symbolKey  = symbolKeys[shape] || 'symbolCircle';
+      const symbolType = window.d3 && (d3[symbolKey] || d3.symbolCircle);
+      let swatch;
+      if (symbolType) {
+        const half = swatchPx / 2;
+        swatch = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        swatch.setAttribute('width', swatchPx);
+        swatch.setAttribute('height', swatchPx);
+        swatch.setAttribute('viewBox', `0 0 ${swatchPx} ${swatchPx}`);
+        swatch.style.flexShrink = '0';
+        const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        pathEl.setAttribute('transform', `translate(${half},${half})`);
+        pathEl.setAttribute('d', d3.symbol().type(symbolType).size(symbolArea)());
+        pathEl.setAttribute('fill', s.color);
+        swatch.appendChild(pathEl);
+      } else {
+        // Fallback: colored div (d3 not yet loaded — should not normally occur)
+        swatch = document.createElement('div');
+        swatch.className = 'tbl-legend-swatch';
+        swatch.style.background = s.color;
+      }
+
+      const label = document.createElement('span');
       label.textContent = s.name;
       item.appendChild(swatch);
       item.appendChild(label);

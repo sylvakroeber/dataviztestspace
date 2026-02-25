@@ -7,7 +7,7 @@ All charts in this repo share infrastructure files that live here. Chart-specifi
 ```
 shared/theme-v1.js      → window.TBL_THEME   visual constants
 shared/chart-core.js    → window.TBL_CORE    infrastructure + D3 helpers
-shared/chart.js         → window.TBL_CHART   unified renderer (bar, line, combo)
+shared/chart-renderer.js → window.TBL_CHART   unified renderer (bar, line, combo)
 shared/chart-runner.js  → window.TBL_RUNNER  config-driven initialiser
 shared/embed.js                               universal embed loader (one script tag per chart)
 ```
@@ -16,7 +16,7 @@ shared/embed.js                               universal embed loader (one script
 ```html
 <script src="../shared/theme-v1.js"></script>   <!-- optional but recommended -->
 <script src="../shared/chart-core.js"></script>
-<script src="../shared/chart.js"></script>
+<script src="../shared/chart-renderer.js"></script>
 <script src="../shared/chart-runner.js"></script>
 <!-- chart-runner auto-initialises any [data-tbl-chart][data-chart-base] on the page -->
 ```
@@ -25,7 +25,7 @@ shared/embed.js                               universal embed loader (one script
 ```html
 <script src="../shared/theme-v1.js"></script>
 <script src="../shared/chart-core.js"></script>
-<script src="../shared/chart.js"></script>
+<script src="../shared/chart-renderer.js"></script>
 <script src="chart.js"></script>   <!-- custom makeChartFn; calls TBL_CHART.run() -->
 ```
 
@@ -39,7 +39,7 @@ shared/embed.js                               universal embed loader (one script
 |------|------|---------|
 | `theme-v1.js` | `window.TBL_THEME` | All visual constants — colors, typography, spacing, chart defaults |
 | `chart-core.js` | `window.TBL_CORE` | HTML/CSS injection, dep loading, resize debounce, shared D3 helpers |
-| `chart.js` | `window.TBL_CHART` | Unified renderer — bar, line, combo; calls TBL_CORE |
+| `chart-renderer.js` | `window.TBL_CHART` | Unified renderer — bar, line, combo; calls TBL_CORE |
 | `chart-runner.js` | `window.TBL_RUNNER` | Config-driven runner — reads config.yaml + data.csv, calls TBL_CHART |
 | `embed.js` | — | Universal embed loader; reads `data-chart` attr to load any chart by ID |
 | `chart-runner-guide.md` | — | Author documentation for config.yaml options |
@@ -130,7 +130,7 @@ For charts that need different palettes per series, reference `TBL_THEME.colors.
 
 ## `chart-core.js` — TBL_CORE
 
-Universal infrastructure. Handles everything that isn't rendering: HTML injection, CSS injection, dep loading, resize debounce. Also exports shared D3 helpers that `chart.js` calls during rendering.
+Universal infrastructure. Handles everything that isn't rendering: HTML injection, CSS injection, dep loading, resize debounce. Also exports shared D3 helpers that `chart-renderer.js` calls during rendering.
 
 ### Public API
 
@@ -209,7 +209,7 @@ All resolved theme values plus instance state. Key properties:
 
 ### Shared D3 helpers
 
-All require `d3` to be loaded. Called by `chart.js` during rendering.
+All require `d3` to be loaded. Called by `chart-renderer.js` during rendering.
 
 **`fitTitle(ctx, totalWidth)`**
 Measures the title element and scales `--tbl-title-size` CSS variable down if the title would otherwise wrap, floored at `ctx.titleMinSizePx`.
@@ -243,7 +243,7 @@ Builds `.tbl-legend-item` divs with color swatches. Calls `onToggle` with the se
 
 ---
 
-## `chart.js` — TBL_CHART
+## `chart-renderer.js` — TBL_CHART
 
 Unified chart renderer. Calls `TBL_CORE.run()` / `TBL_CORE.initChart()` with its own draw factory.
 
@@ -284,9 +284,18 @@ window.TBL_CHART = {
 
   // ── Line/annotation options ───────────────────────────────────────────────
   avgValue:            number,   // horizontal dashed annotation at this y value
-  avgLabel:            string,
-  avgLabelDate:        string,   // 'YYYY-MM-DD' — x position for the label
-  verticalAnnotations: [{ date: string, color: 'dim'|'bright' }],
+  avgLabel:            string,   // normalized to Mode C annotation if avgLabelDate present
+  avgLabelDate:        string,   // 'YYYY-MM' or 'YYYY-MM-DD' — x position for the label
+  verticalAnnotations: [{ date: string, color: 'dim'|'bright', label?: string, side?: string }],
+
+  // Freeform annotation labels — placed by collision-avoidance engine.
+  // Three modes determined by which fields are present:
+  //   Mode A (x only)  — label floats on y, no leader line
+  //   Mode B (y only)  — label floats on x, no leader line
+  //   Mode C (x + y)   — label placed freely with a thin leader line
+  annotations: [
+    { text: string, x?: string, y?: number, side?: 'above'|'below'|'left'|'right', color?: 'dim'|'bright'|string }
+  ],
 
   // ── Bar options ────────────────────────────────────────────────────────────
   horizontal: boolean,           // default false — swap axes
@@ -294,6 +303,10 @@ window.TBL_CHART = {
   // ── Interaction ───────────────────────────────────────────────────────────
   tooltipFormatter: fn(seriesName, value, xLabel) => string,
   legend:           boolean,     // default true when series.length > 1
+
+  // ── Export ────────────────────────────────────────────────────────────────
+  exportFilename: string,        // base filename for PNG download (no extension); defaults to slugified title
+  exportButton:   boolean,       // set false to hide the "↓ PNG" button; default true
 }
 ```
 
@@ -311,6 +324,13 @@ window.TBL_CHART = {
 
   // type: 'line' — categorical (plots at band center, one value per category)
   data:   number[],
+
+  // type: 'line' — markers at each data point
+  marker?:     false | true | 'circle' | 'triangle' | 'square' | 'diamond' | 'star' | 'cross' | 'wye',
+               // absent/false = no markers; true = circle; string = named shape
+               // Standard order: circle, triangle, square, diamond, star, cross, wye
+  markerSize?: 'small' | 'large' | number,
+               // 'small' (default, ~40 sq px) | 'large' (~100 sq px) | custom area in d3.symbol sq-px units
 
   // type: 'bar'
   data:   number[],              // one value per categories[] entry
@@ -351,7 +371,7 @@ Bar series with `stack: true` are grouped into a default stack. `stack: 'keyName
 | `.axis` | `<g>` | Axis groups; `.domain` removed; tick lines removed on band axes |
 | `.gridline` | `<g>` | Gridline groups; `.domain` removed |
 
-All scoped to `#uid-container` via CSS injected by both `chart-core.js` (structural) and `chart.js` (chart-element-specific).
+All scoped to `#uid-container` via CSS injected by both `chart-core.js` (structural) and `chart-renderer.js` (chart-element-specific).
 
 ---
 
@@ -387,7 +407,7 @@ Multiple charts on the same page are fully isolated.
         data-no-xlsx=""
         data-logo="../shared/tbl-logo-blue.svg"></div>
    <script src="../shared/chart-core.js"></script>
-   <script src="../shared/chart.js"></script>
+   <script src="../shared/chart-renderer.js"></script>
    <script src="../shared/chart-runner.js"></script>
    ```
 6. Embed on a host page with the universal loader — no per-chart embed.js needed:

@@ -63,10 +63,16 @@
   <div data-tbl-chart data-logo="../shared/tbl-logo-blue.svg"></div>
 </div>
 
+<!-- ── Variant 8: Dense 3-series line + 3 annotation modes ───────────────── -->
+<div class="variant-label">8 — Annotation Engine: Dense 3-Series + Mode A/B/C + backward-compat avgLabel</div>
+<div class="chart-wrap">
+  <div data-tbl-chart data-logo="../shared/tbl-logo-blue.svg"></div>
+</div>
+
 <!-- Scripts ──────────────────────────────────────────────────────────────── -->
 <script src="../shared/theme-v1.js"></script>
 <script src="../shared/chart-core.js"></script>
-<script src="../shared/chart.js"></script>
+<script src="../shared/chart-renderer.js"></script>
 <script>
 (function () {
   'use strict';
@@ -77,6 +83,7 @@
 
   // Variant 1 — Simple bar
   var v1Data = {
+    figure:     'Figure 1',
     title:      'Simple Bar Chart',
     unit:       'Units sold (thousands)',
     footnote:   'Hypothetical test data.',
@@ -120,7 +127,7 @@
     unit:  'Index (base 100)',
     series: [
       {
-        type: 'line', name: 'Series A',
+        type: 'line', name: 'Series A', marker: 'circle', markerSize: 'small',
         data: [
           { date: '2023-01', value: 100 }, { date: '2023-02', value: 104 },
           { date: '2023-03', value: 102 }, { date: '2023-04', value: 108 },
@@ -131,7 +138,7 @@
         ],
       },
       {
-        type: 'line', name: 'Series B',
+        type: 'line', name: 'Series B', marker: 'square', markerSize: 'small',
         data: [
           { date: '2023-01', value: 100 }, { date: '2023-02', value: 99  },
           { date: '2023-03', value: 101 }, { date: '2023-04', value: 98  },
@@ -143,9 +150,10 @@
       },
     ],
     avgValue: 109,
-    avgLabel: 'Period avg',
-    avgLabelDate: '2023-07',
     verticalAnnotations: [{ date: '2023-06-15', color: 'bright' }],
+    annotations: [
+      { text: 'Period avg', y: 109, side: 'right', color: 'bright' },
+    ],
     tooltipFormatter: function (name, val) { return val.toFixed(1); },
   };
 
@@ -162,7 +170,7 @@
     series: [
       { type: 'bar',  name: 'Segment A', data: [200, 150, 300, 180, 240], stack: true },
       { type: 'bar',  name: 'Segment B', data: [100, 120, 140, 90, 160],  stack: true },
-      { type: 'line', name: 'Margin %',  data: [18, 22, 20, 25, 27], yAxis: 'right', color: '#c86020' },
+      { type: 'line', name: 'Margin %',  data: [18, 22, 20, 25, 27], yAxis: 'right', color: '#c86020', marker: 'circle', markerSize: 'large' },
     ],
     tooltipFormatter: function (name, val) { return name === 'Margin %' ? val + '%' : val.toLocaleString(); },
   };
@@ -193,9 +201,67 @@
     tooltipFormatter: function (name, val) { return val.toLocaleString(); },
   };
 
+  // Variant 8 — Dense 3-series line chart testing all three annotation modes
+  // plus backward-compat avgLabel (Mode C via normalization).
+  var v8Data = {
+    title: 'Annotation Engine — 3 Series + Mode A / B / C',
+    unit:  'Index (base 100)',
+    series: [
+      {
+        type: 'line', name: 'Series A', marker: 'circle', markerSize: 'small',
+        data: [
+          { date: '2023-01', value: 100 }, { date: '2023-02', value: 105 },
+          { date: '2023-03', value: 103 }, { date: '2023-04', value: 109 },
+          { date: '2023-05', value: 114 }, { date: '2023-06', value: 111 },
+          { date: '2023-07', value: 119 }, { date: '2023-08', value: 124 },
+          { date: '2023-09', value: 122 }, { date: '2023-10', value: 127 },
+          { date: '2023-11', value: 131 }, { date: '2023-12', value: 135 },
+        ],
+      },
+      {
+        type: 'line', name: 'Series B', marker: 'square', markerSize: 'small',
+        data: [
+          { date: '2023-01', value: 100 }, { date: '2023-02', value:  99 },
+          { date: '2023-03', value: 101 }, { date: '2023-04', value:  98 },
+          { date: '2023-05', value: 103 }, { date: '2023-06', value: 107 },
+          { date: '2023-07', value: 105 }, { date: '2023-08', value: 110 },
+          { date: '2023-09', value: 112 }, { date: '2023-10', value: 109 },
+          { date: '2023-11', value: 114 }, { date: '2023-12', value: 118 },
+        ],
+      },
+      {
+        type: 'line', name: 'Series C', marker: 'triangle', markerSize: 'small',
+        data: [
+          { date: '2023-01', value: 105 }, { date: '2023-02', value: 107 },
+          { date: '2023-03', value: 109 }, { date: '2023-04', value: 106 },
+          { date: '2023-05', value: 111 }, { date: '2023-06', value: 115 },
+          { date: '2023-07', value: 113 }, { date: '2023-08', value: 117 },
+          { date: '2023-09', value: 116 }, { date: '2023-10', value: 120 },
+          { date: '2023-11', value: 119 }, { date: '2023-12', value: 122 },
+        ],
+      },
+    ],
+    // Backward compat: avgLabel + avgValue + avgLabelDate → normalized to Mode C
+    avgValue:     109,
+    avgLabel:     'Period avg',
+    avgLabelDate: '2023-04',
+    verticalAnnotations: [
+      { date: '2023-06-15', color: 'bright' },
+    ],
+    annotations: [
+      // Mode A — x-anchored; label floats on y avoiding line paths
+      { text: 'Policy enacted', x: '2023-06', side: 'above', color: 'dim' },
+      // Mode B — y-anchored; label floats on x (right side)
+      { text: 'Target: 115',   y: 115,        side: 'right', color: 'bright' },
+      // Mode C — x+y anchor with leader line
+      { text: 'Peak: 135',     x: '2023-12',  y: 135,        side: 'above', color: 'bright' },
+    ],
+    tooltipFormatter: function (name, val) { return val.toFixed(1); },
+  };
+
   // ── Wire all charts ───────────────────────────────────────────────────────
   // Each [data-tbl-chart] element gets its own initChart call with its own data.
-  var allData = [v1Data, v2Data, v3Data, v4Data, v5Data, v6Data, v7Data];
+  var allData = [v1Data, v2Data, v3Data, v4Data, v5Data, v6Data, v7Data, v8Data];
 
   // TBL_CHART.run() scans all [data-tbl-chart] elements and calls makeChartFn
   // once per element. But each variant needs different data, so we use initChart

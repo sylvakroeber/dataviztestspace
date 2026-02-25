@@ -3,7 +3,8 @@
 # Consumed by shared/chart-runner.js.
 # See shared/chart-runner-guide.md for full option reference.
 
-title:    "Figure 1. Customs Duty Revenue (Inflation-Adjusted)"
+figure:   "Figure 1"
+title:    "Customs Duty Revenue (Inflation-Adjusted)"
 unit:     "Billions USD"
 palette:  blue
 credit:   "Source: Budget Lab at Yale"
