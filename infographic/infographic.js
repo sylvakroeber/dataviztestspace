@@ -1,5 +1,45 @@
 (function () {
 
+  // ── Constants & math ──────────────────────────────────────────────────────────
+  var SCENARIOS = {
+    since2015: { central: 97, low: 73, high: 146 },
+    since2022: { central: 18, low: 14, high: 27  }
+  };
+
+  var LOANS = {
+    mortgage: { term: 360, observedRate: 6.23, passthrough: 1.00, defaultPrincipal: 329840 },
+    auto:     { term: 67,  observedRate: 7.51, passthrough: 0.50, defaultPrincipal: 42332  },
+    business: { term: 60,  observedRate: 7.00, passthrough: 0.25, defaultPrincipal: 663000 }
+  };
+
+  function monthlyPayment(principal, annualRatePct, termMonths) {
+    if (annualRatePct <= 0) return principal / termMonths;
+    var r = annualRatePct / 100 / 12;
+    var n = termMonths;
+    var factor = Math.pow(1 + r, n);
+    return principal * r * factor / (factor - 1);
+  }
+
+  function computeLoanImpact(principal, observedRatePct, passthrough, scenarioDeltaBp, termMonths) {
+    var loanEffectPp = (scenarioDeltaBp * passthrough) / 100;
+    var counterfactualRatePct = observedRatePct - loanEffectPp;
+    var obsMonthly = monthlyPayment(principal, observedRatePct, termMonths);
+    var cfMonthly  = monthlyPayment(principal, counterfactualRatePct, termMonths);
+    var diff = obsMonthly - cfMonthly;
+    return {
+      annualImpact:   Math.round(diff * 12),
+      lifetimeImpact: Math.round(diff * termMonths)
+    };
+  }
+
+  var defaultImpacts = {
+    mortgage: computeLoanImpact(LOANS.mortgage.defaultPrincipal, LOANS.mortgage.observedRate, LOANS.mortgage.passthrough, SCENARIOS.since2015.central, LOANS.mortgage.term),
+    auto:     computeLoanImpact(LOANS.auto.defaultPrincipal,     LOANS.auto.observedRate,     LOANS.auto.passthrough,     SCENARIOS.since2015.central, LOANS.auto.term),
+    business: computeLoanImpact(LOANS.business.defaultPrincipal, LOANS.business.observedRate, LOANS.business.passthrough, SCENARIOS.since2015.central, LOANS.business.term)
+  };
+
+  function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
+
   function resolveTheme() {
     var T  = window.TBL_THEME || {};
     var C  = T.colors || {};
@@ -76,15 +116,18 @@
       u + ' .calc-output { flex: 1; padding-left: 24px; display: flex; align-items: center; }',
       u + ' .calc-field { margin-bottom: 16px; }',
       u + ' .calc-field > label, ' + u + ' .calc-label { display: block; font-size: ' + theme.annotationSize + '; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; margin-bottom: 8px; }',
-      u + ' .calculator input[type="number"] { width: 100%; padding: 10px 12px; border: 1px solid rgba(0,0,0,0.2); border-radius: ' + theme.borderRadius + '; font-size: 16px; background: rgba(255,255,255,0.6); color: ' + theme.titleText + '; outline: none; transition: border-color 0.2s; }',
-      u + ' .calculator input[type="number"]:focus { border-color: rgba(0,0,0,0.4); }',
+      u + ' .amount-input-wrap { position: relative; }',
+      u + ' .amount-prefix { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; color: ' + theme.titleText + '; pointer-events: none; user-select: none; }',
+      u + ' .calculator input[type="text"] { width: 100%; padding: 10px 12px 10px 24px; border: 1px solid rgba(0,0,0,0.2); border-radius: ' + theme.borderRadius + '; font-size: 16px; background: rgba(255,255,255,0.6); color: ' + theme.titleText + '; outline: none; transition: border-color 0.2s; }',
+      u + ' .calculator input[type="text"]:focus { border-color: rgba(0,0,0,0.4); }',
       u + ' .loan-type-btns { display: flex; gap: 8px; flex-wrap: wrap; }',
-      u + ' .loan-btn { padding: 7px 14px; border: 1.5px solid rgba(0,0,0,0.2); border-radius: ' + theme.borderRadius + '; background: rgba(255,255,255,0.5); color: ' + theme.titleText + '; font-size: ' + theme.bodySize + '; font-weight: 600; cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s; }',
+      u + ' .loan-btn { flex: 1; padding: 7px 14px; text-align: center; border: 1.5px solid rgba(0,0,0,0.2); border-radius: ' + theme.borderRadius + '; background: rgba(255,255,255,0.5); color: ' + theme.titleText + '; font-size: ' + theme.bodySize + '; font-weight: 600; cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s; }',
       u + ' .loan-btn:hover { border-color: rgba(0,0,0,0.4); background: rgba(255,255,255,0.8); }',
+      u + ' .loan-btn.active { opacity: 0.8; }',
       u + ' .loan-btn.active[data-value="auto"]     { background: ' + theme.colorAuto + ';     border-color: ' + theme.colorAuto + ';     color: #fff; }',
       u + ' .loan-btn.active[data-value="mortgage"] { background: ' + theme.colorMortgage + '; border-color: ' + theme.colorMortgage + '; color: #fff; }',
       u + ' .loan-btn.active[data-value="business"] { background: ' + theme.colorBiz + ';      border-color: ' + theme.colorBiz + ';      color: #fff; }',
-      '#' + uid + '-calcBtn { padding: 10px 24px; background: ' + theme.calcBtnBg + '; color: #fff; border: none; border-radius: ' + theme.borderRadius + '; font-size: ' + theme.bodySize + '; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: block; margin: 4px auto 0; }',
+      '#' + uid + '-calcBtn { padding: 10px 24px; width: calc(66.667% + 5.333px); background: ' + theme.calcBtnBg + '; color: #fff; border: none; border-radius: ' + theme.borderRadius + '; font-size: ' + theme.bodySize + '; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: block; margin: 4px auto 0; }',
       '#' + uid + '-calcBtn:hover { opacity: 0.85; }',
       u + ' .calc-result { font-size: ' + theme.bodySize + '; line-height: 1.9; width: 100%; }',
       u + ' .result-amount { font-size: clamp(20px, 3vw, 26px); font-weight: 800; color: ' + theme.titleText + '; }',
@@ -112,15 +155,15 @@
         '<div class="cards-col">' +
           '<div class="card auto" data-index="0">' +
             '<div class="icon">&#x1F697;</div>' +
-            '<div class="card-text"><div class="loan-type">Auto Loan</div><div class="amount">$180</div></div>' +
+            '<div class="card-text"><div class="loan-type">Auto Loan</div><div class="amount">' + fmt(defaultImpacts.auto.annualImpact) + '</div></div>' +
           '</div>' +
           '<div class="card mortgage" data-index="1">' +
             '<div class="icon">&#x1F3E0;</div>' +
-            '<div class="card-text"><div class="loan-type">Mortgage</div><div class="amount">$3,610</div></div>' +
+            '<div class="card-text"><div class="loan-type">Mortgage</div><div class="amount">' + fmt(defaultImpacts.mortgage.annualImpact) + '</div></div>' +
           '</div>' +
           '<div class="card biz" data-index="2">' +
             '<div class="icon">&#x1F3E2;</div>' +
-            '<div class="card-text"><div class="loan-type">Small Business Loan</div><div class="amount">$1,360</div></div>' +
+            '<div class="card-text"><div class="loan-type">Small Business Loan</div><div class="amount">' + fmt(defaultImpacts.business.annualImpact) + '</div></div>' +
           '</div>' +
         '</div>' +
         '<div class="chart-section">' +
@@ -138,15 +181,15 @@
         '<div class="cards-col">' +
           '<div class="card auto" data-index="0">' +
             '<div class="icon">&#x1F697;</div>' +
-            '<div class="card-text"><div class="loan-type">Auto Loan</div><div class="amount">$990</div></div>' +
+            '<div class="card-text"><div class="loan-type">Auto Loan</div><div class="amount">' + fmt(defaultImpacts.auto.lifetimeImpact) + '</div></div>' +
           '</div>' +
           '<div class="card mortgage" data-index="1">' +
             '<div class="icon">&#x1F3E0;</div>' +
-            '<div class="card-text"><div class="loan-type">Mortgage</div><div class="amount">$108,430</div></div>' +
+            '<div class="card-text"><div class="loan-type">Mortgage</div><div class="amount">' + fmt(defaultImpacts.mortgage.lifetimeImpact) + '</div></div>' +
           '</div>' +
           '<div class="card biz" data-index="2">' +
             '<div class="icon">&#x1F3E2;</div>' +
-            '<div class="card-text"><div class="loan-type">Small Business Loan</div><div class="amount">$6,810</div></div>' +
+            '<div class="card-text"><div class="loan-type">Small Business Loan</div><div class="amount">' + fmt(defaultImpacts.business.lifetimeImpact) + '</div></div>' +
           '</div>' +
         '</div>' +
         '<div class="chart-section">' +
@@ -165,7 +208,10 @@
           '<div class="calc-inputs">' +
             '<div class="calc-field">' +
               '<label for="' + uid + '-loanAmount">Enter your loan amount</label>' +
-              '<input type="number" id="' + uid + '-loanAmount" placeholder="e.g. 250000" min="0" />' +
+              '<div class="amount-input-wrap">' +
+                '<span class="amount-prefix">$</span>' +
+                '<input type="text" inputmode="numeric" id="' + uid + '-loanAmount" placeholder="e.g. 250,000" />' +
+              '</div>' +
             '</div>' +
             '<div class="calc-field">' +
               '<span class="calc-label">Type of loan</span>' +
@@ -291,15 +337,15 @@
   // ── Interactivity ─────────────────────────────────────────────────────────────
   function initInteractivity(uid, theme) {
     var datasets = {
-      annual:   [
-        { key: 'auto',     value: 180,    index: 0 },
-        { key: 'mortgage', value: 3610,   index: 1 },
-        { key: 'biz',      value: 1360,   index: 2 }
+      annual: [
+        { key: 'auto',     value: defaultImpacts.auto.annualImpact,      index: 0 },
+        { key: 'mortgage', value: defaultImpacts.mortgage.annualImpact,   index: 1 },
+        { key: 'biz',      value: defaultImpacts.business.annualImpact,   index: 2 }
       ],
       lifetime: [
-        { key: 'auto',     value: 990,    index: 0 },
-        { key: 'mortgage', value: 108430, index: 1 },
-        { key: 'biz',      value: 6810,   index: 2 }
+        { key: 'auto',     value: defaultImpacts.auto.lifetimeImpact,     index: 0 },
+        { key: 'mortgage', value: defaultImpacts.mortgage.lifetimeImpact,  index: 1 },
+        { key: 'biz',      value: defaultImpacts.business.lifetimeImpact,  index: 2 }
       ]
     };
 
@@ -418,6 +464,13 @@
       resizeTimer = setTimeout(renderAll, 150);
     }).observe(document.getElementById(uid));
 
+    // Calculator — live comma formatting on loan amount input
+    var loanInput = document.getElementById(uid + '-loanAmount');
+    loanInput.addEventListener('input', function() {
+      var digits = this.value.replace(/[^0-9]/g, '');
+      this.value = digits ? parseInt(digits, 10).toLocaleString() : '';
+    });
+
     // Calculator — loan type buttons
     document.querySelectorAll('#' + uid + ' .loan-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
@@ -426,12 +479,8 @@
       });
     });
 
-    var annualRates   = { auto: 180,  mortgage: 3610,   business: 1360 };
-    var lifetimeRates = { auto: 990,  mortgage: 108430, business: 6810 };
-    var baseAmounts   = { auto: 25000, mortgage: 400000, business: 100000 };
-
     document.getElementById(uid + '-calcBtn').addEventListener('click', function() {
-      var amount = parseFloat(document.getElementById(uid + '-loanAmount').value);
+      var amount = parseFloat(document.getElementById(uid + '-loanAmount').value.replace(/,/g, ''));
       var typeEl = document.querySelector('#' + uid + ' .loan-btn.active');
       var result = document.getElementById(uid + '-calcResult');
 
@@ -440,14 +489,13 @@
 
       var type      = typeEl.dataset.value;
       var typeLabel = type === 'auto' ? 'auto loan' : type === 'mortgage' ? 'mortgage' : 'small business loan';
-      var ratio     = amount / baseAmounts[type];
-      var annual    = Math.round(annualRates[type]   * ratio);
-      var lifetime  = Math.round(lifetimeRates[type] * ratio);
+      var loan      = LOANS[type];
+      var impact    = computeLoanImpact(amount, loan.observedRate, loan.passthrough, SCENARIOS.since2015.central, loan.term);
 
       result.innerHTML =
         '<div>Federal legislation since 2015 has raised borrowing costs on a <strong>$' + amount.toLocaleString() + ' ' + typeLabel + '</strong> by:</div>' +
-        '<div style="margin-top:12px;"><span class="result-amount">$' + annual.toLocaleString()   + '</span> annually</div>' +
-        '<div><span class="result-amount">$'                          + lifetime.toLocaleString()  + '</span> over the life of your loan</div>';
+        '<div style="margin-top:12px;"><span class="result-amount">$' + impact.annualImpact.toLocaleString()   + '</span> annually</div>' +
+        '<div><span class="result-amount">$'                          + impact.lifetimeImpact.toLocaleString()  + '</span> over the life of your loan</div>';
     });
   }
 
