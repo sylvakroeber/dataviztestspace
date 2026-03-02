@@ -27,8 +27,9 @@
     var cfMonthly  = monthlyPayment(principal, counterfactualRatePct, termMonths);
     var diff = obsMonthly - cfMonthly;
     return {
-      annualImpact:   Math.round(diff * 12),
-      lifetimeImpact: Math.round(diff * termMonths)
+      annualImpact:      Math.round(diff * 12),
+      lifetimeImpact:    Math.round(diff * termMonths),
+      lifetimeImpactPct: parseFloat(((diff * termMonths) / principal * 100).toFixed(1))
     };
   }
 
@@ -39,6 +40,13 @@
   };
 
   function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
+  function fmtPct(p) { return p % 1 === 0 ? p + '%' : p.toFixed(1) + '%'; }
+  function hexToRgba(hex, alpha) {
+    var r = parseInt(hex.slice(1, 3), 16);
+    var g = parseInt(hex.slice(3, 5), 16);
+    var b = parseInt(hex.slice(5, 7), 16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+  }
 
   function resolveTheme() {
     var T  = window.TBL_THEME || {};
@@ -75,8 +83,8 @@
 
       // Section labels
       u + ' .section-label { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }',
-      u + ' .section-label .line { flex: 1; height: 1px; background: currentColor; opacity: 0.15; }',
-      u + ' .section-label .text { font-size: ' + theme.titleSize + '; font-weight: 600; white-space: nowrap; display: block; }',
+      u + ' .section-label .line { flex: 1; min-width: 20px; height: 1px; background: currentColor; opacity: 0.15; }',
+      u + ' .section-label .text { font-size: ' + theme.titleSize + '; font-weight: 600; display: block; text-align: center; }',
 
       // Row layout
       u + ' .row { display: grid; grid-template-columns: 200px 1fr; gap: 12px; margin-bottom: 24px; }',
@@ -123,10 +131,9 @@
       u + ' .loan-type-btns { display: flex; gap: 8px; flex-wrap: wrap; }',
       u + ' .loan-btn { flex: 1; padding: 7px 14px; text-align: center; border: 1.5px solid rgba(0,0,0,0.2); border-radius: ' + theme.borderRadius + '; background: rgba(255,255,255,0.5); color: ' + theme.titleText + '; font-size: ' + theme.bodySize + '; font-weight: 600; cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s; }',
       u + ' .loan-btn:hover { border-color: rgba(0,0,0,0.4); background: rgba(255,255,255,0.8); }',
-      u + ' .loan-btn.active { opacity: 0.8; }',
-      u + ' .loan-btn.active[data-value="auto"]     { background: ' + theme.colorAuto + ';     border-color: ' + theme.colorAuto + ';     color: #fff; }',
-      u + ' .loan-btn.active[data-value="mortgage"] { background: ' + theme.colorMortgage + '; border-color: ' + theme.colorMortgage + '; color: #fff; }',
-      u + ' .loan-btn.active[data-value="business"] { background: ' + theme.colorBiz + ';      border-color: ' + theme.colorBiz + ';      color: #fff; }',
+      u + ' .loan-btn.active[data-value="auto"]     { background: ' + hexToRgba(theme.colorAuto,     0.4) + '; border-color: ' + theme.colorAuto +     '; color: ' + theme.titleText + '; }',
+      u + ' .loan-btn.active[data-value="mortgage"] { background: ' + hexToRgba(theme.colorMortgage, 0.4) + '; border-color: ' + theme.colorMortgage + '; color: ' + theme.titleText + '; }',
+      u + ' .loan-btn.active[data-value="business"] { background: ' + hexToRgba(theme.colorBiz,      0.4) + '; border-color: ' + theme.colorBiz +      '; color: ' + theme.titleText + '; }',
       '#' + uid + '-calcBtn { padding: 10px 24px; width: calc(66.667% + 5.333px); background: ' + theme.calcBtnBg + '; color: #fff; border: none; border-radius: ' + theme.borderRadius + '; font-size: ' + theme.bodySize + '; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: block; margin: 4px auto 0; text-align: center; }',
       '#' + uid + '-calcBtn:hover { opacity: 0.85; }',
       u + ' .calc-result { font-size: ' + theme.bodySize + '; line-height: 1.9; width: 100%; }',
@@ -181,20 +188,20 @@
         '<div class="cards-col">' +
           '<div class="card auto" data-index="0">' +
             '<div class="icon">&#x1F697;</div>' +
-            '<div class="card-text"><div class="loan-type">Auto Loan</div><div class="amount">' + fmt(defaultImpacts.auto.lifetimeImpact) + '</div></div>' +
+            '<div class="card-text"><div class="loan-type">Auto Loan</div><div class="amount">' + fmtPct(defaultImpacts.auto.lifetimeImpactPct) + '</div></div>' +
           '</div>' +
           '<div class="card mortgage" data-index="1">' +
             '<div class="icon">&#x1F3E0;</div>' +
-            '<div class="card-text"><div class="loan-type">Mortgage</div><div class="amount">' + fmt(defaultImpacts.mortgage.lifetimeImpact) + '</div></div>' +
+            '<div class="card-text"><div class="loan-type">Mortgage</div><div class="amount">' + fmtPct(defaultImpacts.mortgage.lifetimeImpactPct) + '</div></div>' +
           '</div>' +
           '<div class="card biz" data-index="2">' +
             '<div class="icon">&#x1F3E2;</div>' +
-            '<div class="card-text"><div class="loan-type">Small Business Loan</div><div class="amount">' + fmt(defaultImpacts.business.lifetimeImpact) + '</div></div>' +
+            '<div class="card-text"><div class="loan-type">Small Business Loan</div><div class="amount">' + fmtPct(defaultImpacts.business.lifetimeImpactPct) + '</div></div>' +
           '</div>' +
         '</div>' +
         '<div class="chart-section">' +
           '<h3>Lifetime Added Cost</h3>' +
-          '<p class="sub">Extra interest over life of loan (log scale)</p>' +
+          '<p class="sub">As % of loan principal</p>' +
           '<div class="chart-wrap"><svg id="' + uid + '-lifetime"></svg></div>' +
         '</div>' +
       '</div>' +
@@ -238,9 +245,20 @@
     var d3 = window.d3;
     d3.select(svgEl).selectAll('*').remove();
 
-    var margin = { top: 10, right: 8, bottom: 36, left: 48 };
+    var axSize = parseInt(theme.axisSize, 10);
+    var xLabels = { auto: 'Auto', mortgage: 'Mortgage', biz: 'Small Business' };
+
+    // Pre-estimate whether x labels will overlap so we can set margin.bottom upfront
     var totalW = svgEl.parentElement.clientWidth  || 300;
     var totalH = svgEl.parentElement.clientHeight || 180;
+    var approxW = totalW - 56; // rough left+right margin
+    var maxLabelPx = Math.max.apply(null, data.map(function(d) {
+      return ((xLabels[d.key] || d.key).length) * axSize * 0.62;
+    }));
+    var approxStep = approxW / (data.length + 0.35 * (data.length - 1));
+    var needAngle  = approxStep < maxLabelPx;
+
+    var margin = { top: 10, right: 8, bottom: needAngle ? 58 : 36, left: 48 };
     var W = totalW - margin.left - margin.right;
     var H = totalH - margin.top  - margin.bottom;
     if (W <= 0 || H <= 0) return;
@@ -262,9 +280,6 @@
       ? d3.scaleLog().domain([yMin, maxVal * 1.6]).range([H, 0])
       : d3.scaleLinear().domain([0, maxVal * 1.2]).range([H, 0]).nice();
 
-    var axSize = parseInt(theme.axisSize, 10);
-    var xLabels = { auto: 'Auto', mortgage: 'Mortgage', biz: 'Small Business' };
-
     // Grid lines (skip yMin on log scale — it coincides with bar baseline)
     var gridTicks = opts.logScale ? [1000, 10000, 100000] : yScale.ticks(5);
     g.selectAll('.grid').data(gridTicks).enter().append('line')
@@ -284,9 +299,11 @@
     }
 
     // Y axis
-    var yFmt = opts.logScale
-      ? function(d) { return d >= 1000 ? '$' + (d / 1000).toFixed(0) + 'k' : '$' + d; }
-      : function(d) { return d === 0 ? '$0' : d >= 1000 ? '$' + Math.round(d / 1000) + 'k' : '$' + d; };
+    var yFmt = opts.format === 'pct'
+      ? function(d) { return d === 0 ? '0%' : (d % 1 === 0 ? d + '%' : d.toFixed(1) + '%'); }
+      : opts.logScale
+        ? function(d) { return d >= 1000 ? '$' + (d / 1000).toFixed(0) + 'k' : '$' + d; }
+        : function(d) { return d === 0 ? '$0' : d >= 1000 ? '$' + Math.round(d / 1000) + 'k' : '$' + d; };
 
     var yAxisFn = opts.logScale
       ? d3.axisLeft(yScale).tickValues([1000, 10000, 100000]).tickFormat(yFmt)
@@ -310,13 +327,26 @@
     }
 
     // X axis
-    g.append('g').attr('transform', 'translate(0,' + H + ')')
+    var xAxisG = g.append('g').attr('transform', 'translate(0,' + H + ')')
       .call(d3.axisBottom(xScale).tickFormat(function(d) { return xLabels[d] || d; }))
       .call(function(ax) {
         ax.select('.domain').remove();
         ax.selectAll('.tick line').remove();
         ax.selectAll('text').attr('fill', theme.axisText).style('font-size', axSize + 'px');
       });
+    if (needAngle) {
+      xAxisG.selectAll('text')
+        .attr('text-anchor', 'end')
+        .attr('dx', '-0.5em')
+        .attr('dy', '0.15em')
+        .attr('transform', 'rotate(-35)');
+    }
+
+    // Capture tick text nodes so callers can highlight them directly
+    if (opts.tickTextOut) {
+      opts.tickTextOut.length = 0;
+      xAxisG.selectAll('text').each(function() { opts.tickTextOut.push(this); });
+    }
 
     // Bars — start from H in both scale types (domain-min maps to range-max = H)
     var barColors = { auto: theme.colorAuto, mortgage: theme.colorMortgage, biz: theme.colorBiz };
@@ -343,9 +373,9 @@
         { key: 'biz',      value: defaultImpacts.business.annualImpact,   index: 2 }
       ],
       lifetime: [
-        { key: 'auto',     value: defaultImpacts.auto.lifetimeImpact,     index: 0 },
-        { key: 'mortgage', value: defaultImpacts.mortgage.lifetimeImpact,  index: 1 },
-        { key: 'biz',      value: defaultImpacts.business.lifetimeImpact,  index: 2 }
+        { key: 'auto',     value: defaultImpacts.auto.lifetimeImpactPct,     index: 0 },
+        { key: 'mortgage', value: defaultImpacts.mortgage.lifetimeImpactPct,  index: 1 },
+        { key: 'biz',      value: defaultImpacts.business.lifetimeImpactPct,  index: 2 }
       ]
     };
 
@@ -396,13 +426,32 @@
 
     function hideTip() { tip.style.display = 'none'; }
 
-    // Bar highlight via SVG opacity
+    // Bar highlight via SVG opacity + x-axis label bold/color
+    var barColors = { auto: theme.colorAuto, mortgage: theme.colorMortgage, biz: theme.colorBiz };
+
+    var axisKeyOrder = ['auto', 'mortgage', 'biz'];
+
+    // Tick text nodes captured at draw time (see drawBarChart → opts.tickTextOut)
+    var annualTickTexts   = [];
+    var lifetimeTickTexts = [];
+
     function highlightBar(svgEl, activeIdx) {
       window.d3.select(svgEl).selectAll('.bar')
         .attr('opacity', function(d) { return d.index === activeIdx ? 1 : 0.2; });
+      var tickTexts = svgEl === annualSvg ? annualTickTexts : lifetimeTickTexts;
+      tickTexts.forEach(function(el, i) {
+        el.setAttribute('fill', i === activeIdx ? barColors[axisKeyOrder[i]] : theme.axisText);
+        if (i === activeIdx) { el.setAttribute('font-weight', '700'); }
+        else                 { el.removeAttribute('font-weight'); }
+      });
     }
     function resetBars(svgEl) {
       window.d3.select(svgEl).selectAll('.bar').attr('opacity', 1);
+      var tickTexts = svgEl === annualSvg ? annualTickTexts : lifetimeTickTexts;
+      tickTexts.forEach(function(el) {
+        el.setAttribute('fill', theme.axisText);
+        el.removeAttribute('font-weight');
+      });
     }
 
     // Card highlight via CSS classes
@@ -423,14 +472,20 @@
     var lifetimeSvg = document.getElementById(uid + '-lifetime');
 
     // Build opts object for a given chart, capturing svgEl + section in closure
-    function makeOpts(svgEl, section, logScale) {
+    function makeOpts(svgEl, section, logScale, format) {
+      var tickOut = section === 'annual' ? annualTickTexts : lifetimeTickTexts;
       return {
         logScale: logScale,
+        format: format,
+        tickTextOut: tickOut,
         onBarOver: function(idx, event) {
           highlightBar(svgEl, idx);
           highlightCard(section, idx);
           var d = datasets[section][idx];
-          showTip(event, chartLabels[section], barLabels[d.key], '$' + d.value.toLocaleString());
+          var valStr = format === 'pct'
+            ? (d.value % 1 === 0 ? d.value + '%' : d.value.toFixed(1) + '%')
+            : '$' + Math.round(d.value).toLocaleString();
+          showTip(event, chartLabels[section], barLabels[d.key], valStr);
         },
         onBarMove: positionTip,
         onBarOut: function() {
@@ -442,8 +497,8 @@
     }
 
     function renderAll() {
-      drawBarChart(annualSvg,   datasets.annual,   makeOpts(annualSvg,   'annual',   false), theme);
-      drawBarChart(lifetimeSvg, datasets.lifetime, makeOpts(lifetimeSvg, 'lifetime', true),  theme);
+      drawBarChart(annualSvg,   datasets.annual,   makeOpts(annualSvg,   'annual',   false, 'dollar'), theme);
+      drawBarChart(lifetimeSvg, datasets.lifetime, makeOpts(lifetimeSvg, 'lifetime', false, 'pct'),    theme);
     }
 
     renderAll();
