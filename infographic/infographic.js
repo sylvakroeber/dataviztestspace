@@ -127,7 +127,7 @@
       u + ' .loan-btn.active[data-value="auto"]     { background: ' + theme.colorAuto + ';     border-color: ' + theme.colorAuto + ';     color: #fff; }',
       u + ' .loan-btn.active[data-value="mortgage"] { background: ' + theme.colorMortgage + '; border-color: ' + theme.colorMortgage + '; color: #fff; }',
       u + ' .loan-btn.active[data-value="business"] { background: ' + theme.colorBiz + ';      border-color: ' + theme.colorBiz + ';      color: #fff; }',
-      '#' + uid + '-calcBtn { padding: 10px 24px; width: calc(66.667% + 5.333px); background: ' + theme.calcBtnBg + '; color: #fff; border: none; border-radius: ' + theme.borderRadius + '; font-size: ' + theme.bodySize + '; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: block; margin: 4px auto 0; }',
+      '#' + uid + '-calcBtn { padding: 10px 24px; width: calc(66.667% + 5.333px); background: ' + theme.calcBtnBg + '; color: #fff; border: none; border-radius: ' + theme.borderRadius + '; font-size: ' + theme.bodySize + '; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: block; margin: 4px auto 0; text-align: center; }',
       '#' + uid + '-calcBtn:hover { opacity: 0.85; }',
       u + ' .calc-result { font-size: ' + theme.bodySize + '; line-height: 1.9; width: 100%; }',
       u + ' .result-amount { font-size: clamp(20px, 3vw, 26px); font-weight: 800; color: ' + theme.titleText + '; }',
@@ -210,7 +210,7 @@
               '<label for="' + uid + '-loanAmount">Enter your loan amount</label>' +
               '<div class="amount-input-wrap">' +
                 '<span class="amount-prefix">$</span>' +
-                '<input type="text" inputmode="numeric" id="' + uid + '-loanAmount" placeholder="e.g. 250,000" />' +
+                '<input type="text" inputmode="numeric" id="' + uid + '-loanAmount" placeholder="250,000, e.g." />' +
               '</div>' +
             '</div>' +
             '<div class="calc-field">' +
