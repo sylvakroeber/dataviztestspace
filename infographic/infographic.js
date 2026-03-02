@@ -500,8 +500,15 @@
   }
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────────
+  function loadD3(cb) {
+    if (window.d3) { cb(); return; }
+    var s = document.createElement('script');
+    s.src = 'https://d3js.org/d3.v7.min.js';
+    s.onload = cb;
+    document.head.appendChild(s);
+  }
+
   function initChart(placeholder) {
-    if (!window.TBL_CORE) { console.error('TBL_INFOGRAPHIC: shared/chart-core.js must be loaded before infographic.js'); return; }
     var uid   = 'tbl-inf-' + Math.random().toString(36).slice(2, 8);
     var theme = resolveTheme();
     placeholder.id = uid;
@@ -509,7 +516,7 @@
     style.textContent = buildCSS(uid, theme);
     document.head.appendChild(style);
     placeholder.innerHTML = buildHTML(uid);
-    window.TBL_CORE.ensureDeps().then(function() { initInteractivity(uid, theme); });
+    loadD3(function() { initInteractivity(uid, theme); });
   }
 
   function run() {
