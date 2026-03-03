@@ -524,7 +524,9 @@
     var loanInput = document.getElementById(uid + '-loanAmount');
     loanInput.addEventListener('input', function() {
       var digits = this.value.replace(/[^0-9]/g, '');
-      this.value = digits ? parseInt(digits, 10).toLocaleString() : '';
+      if (!digits) { this.value = ''; return; }
+      var num = Math.min(parseInt(digits, 10), 999999999);
+      this.value = num.toLocaleString();
     });
 
     // Calculator — loan type buttons
