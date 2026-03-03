@@ -202,7 +202,7 @@
         '</div>' +
         '<div class="chart-section">' +
           '<h3>Lifetime Added Cost</h3>' +
-          '<p class="sub">As a percentage of the loan principal</p>' +
+          '<p class="sub">As a percentage of loan principal</p>' +
           '<div class="chart-wrap"><svg id="' + uid + '-lifetime"></svg></div>' +
         '</div>' +
       '</div>' +
