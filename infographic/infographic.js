@@ -304,7 +304,7 @@
       ? function(d) { return d === 0 ? '0%' : (d % 1 === 0 ? d + '%' : d.toFixed(1) + '%'); }
       : opts.logScale
         ? function(d) { return d >= 1000 ? '$' + (d / 1000).toFixed(0) + 'k' : '$' + d; }
-        : function(d) { return d === 0 ? '$0' : d >= 1000 ? '$' + Math.round(d / 1000) + 'k' : '$' + d; };
+        : function(d) { return '$' + Math.round(d).toLocaleString(); };
 
     var yAxisFn = opts.logScale
       ? d3.axisLeft(yScale).tickValues([1000, 10000, 100000]).tickFormat(yFmt)
