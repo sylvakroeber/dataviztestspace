@@ -98,7 +98,8 @@
       u + ' .card .icon { font-size: 20px; flex-shrink: 0; }',
       u + ' .card-text { display: flex; flex-direction: column; }',
       u + ' .card .loan-type { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; opacity: 0.5; font-weight: 600; line-height: 1.2; }',
-      u + ' .card .amount { font-size: 20px; font-weight: 800; line-height: 1.1; }',
+      u + ' .card .amount { font-size: 26px; font-weight: 800; line-height: 1.1; }',
+      u + ' .card .amount-sub { font-size: 9px; opacity: 0.45; font-weight: 500; line-height: 1.2; margin-top: 2px; }',
 
       // Card colors
       u + ' .card.auto::before     { background: ' + theme.colorAuto + '; }',
@@ -188,20 +189,20 @@
         '<div class="cards-col">' +
           '<div class="card auto" data-index="0">' +
             '<div class="icon">&#x1F697;</div>' +
-            '<div class="card-text"><div class="loan-type">Auto Loan</div><div class="amount">' + fmtPct(defaultImpacts.auto.lifetimeImpactPct) + '</div></div>' +
+            '<div class="card-text"><div class="loan-type">Auto Loan</div><div class="amount">' + fmtPct(defaultImpacts.auto.lifetimeImpactPct) + '</div><div class="amount-sub">of the loan principal</div></div>' +
           '</div>' +
           '<div class="card mortgage" data-index="1">' +
             '<div class="icon">&#x1F3E0;</div>' +
-            '<div class="card-text"><div class="loan-type">Mortgage</div><div class="amount">' + fmtPct(defaultImpacts.mortgage.lifetimeImpactPct) + '</div></div>' +
+            '<div class="card-text"><div class="loan-type">Mortgage</div><div class="amount">' + fmtPct(defaultImpacts.mortgage.lifetimeImpactPct) + '</div><div class="amount-sub">of the loan principal</div></div>' +
           '</div>' +
           '<div class="card biz" data-index="2">' +
             '<div class="icon">&#x1F3E2;</div>' +
-            '<div class="card-text"><div class="loan-type">Small Business Loan</div><div class="amount">' + fmtPct(defaultImpacts.business.lifetimeImpactPct) + '</div></div>' +
+            '<div class="card-text"><div class="loan-type">Small Business Loan</div><div class="amount">' + fmtPct(defaultImpacts.business.lifetimeImpactPct) + '</div><div class="amount-sub">of the loan principal</div></div>' +
           '</div>' +
         '</div>' +
         '<div class="chart-section">' +
           '<h3>Lifetime Added Cost</h3>' +
-          '<p class="sub">As % of loan principal</p>' +
+          '<p class="sub">As a percentage of the loan principal</p>' +
           '<div class="chart-wrap"><svg id="' + uid + '-lifetime"></svg></div>' +
         '</div>' +
       '</div>' +
