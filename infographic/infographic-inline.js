@@ -11,7 +11,7 @@
   var LOANS = {
     mortgage: { term: 360, observedRate: 6.23, passthrough: 1.00, defaultPrincipal: 329840 },
     auto:     { term: 67,  observedRate: 7.51, passthrough: 0.50, defaultPrincipal: 42332  },
-    business: { term: 60,  observedRate: 7.00, passthrough: 0.25, defaultPrincipal: 663000 }
+    business: { term: 120, observedRate: 10.00, passthrough: 0.25, defaultPrincipal: 476800 }
   };
 
   function monthlyPayment(principal, annualRatePct, termMonths) {
